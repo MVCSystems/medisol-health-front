@@ -138,7 +138,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
           </div>
         </div>
         {/* Google */}
-        <Link href="/auth/guest" className="w-full">
+        <Link href="/dashboard/guest" className="w-full">
         <Button
           variant="outline" 
           type="button" 

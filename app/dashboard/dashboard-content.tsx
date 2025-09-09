@@ -2,23 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { DataTable } from "@/components/data-table"
-import { SectionCards } from "@/components/section-cards"
 import {
     SidebarInset,
     SidebarProvider,
 } from "@/components/ui/sidebar"
-import data from "./data.json"
 import { api } from "@/lib/axios"
 import { useAuthStore } from "@/store/authStore"
 import { jwtDecode } from "jwt-decode"
-import type { JwtPayload } from "@/types/auth"
-import { EmployeeRole, SystemRole } from "@/lib/constants/employee-roles"
+import type { Usuario } from "@/types/usuarios.d"
 
 export default function DashboardContent() {
     const searchParams = useSearchParams()
     const router = useRouter()
-    const { setTokens, setUser } = useAuthStore()
+    // const { setTokens, setUser } = useAuthStore()
 
     const [areaCount, setAreaCount] = useState(0)
     const [areaDetail, setAreaDetail] = useState("")
