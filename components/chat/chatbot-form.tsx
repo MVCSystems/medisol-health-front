@@ -1,132 +1,163 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Send, Bot, User, Sparkles, MessageCircle, Zap } from "lucide-react"
-import { chatbotWS } from "@/lib/websocket"
+import type React from "react";
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Send,
+  Bot,
+  User,
+  Sparkles,
+  Trash,
+  Frown,
+  Meh,
+  Smile,
+  Laugh,
+} from "lucide-react";
+// ...existing code...
+import { chatbotWS } from "@/lib/websocket";
 
 interface Message {
-  id: string
-  content: string
-  sender: "user" | "bot"
-  timestamp: Date
-  suggestions?: string[]
+  id: string;
+  content: string;
+  sender: "user" | "bot";
+  timestamp: Date;
+  suggestions?: string[];
 }
 
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const [connected, setConnected] = useState(false)
-  const [context, setContext] = useState<any>({})
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const messagesContainerRef = useRef<HTMLDivElement>(null)
-  const [autoScroll, setAutoScroll] = useState(true)
+  const [inputValue, setInputValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [context, setContext] = useState<any>({});
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const [autoScroll, setAutoScroll] = useState(true);
 
-  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
-        behavior
-      })
+        behavior,
+      });
     } else {
-      messagesEndRef.current?.scrollIntoView({ behavior })
+      messagesEndRef.current?.scrollIntoView({ behavior });
     }
-  }
+  };
 
   // Autoscroll solo si el usuario está cerca del final
   useEffect(() => {
     if (autoScroll) {
-      scrollToBottom(messages.length < 3 ? 'auto' : 'smooth')
+      scrollToBottom(messages.length < 3 ? "auto" : "smooth");
     }
-  }, [messages, autoScroll])
+  }, [messages, autoScroll]);
 
   const handleScroll = () => {
-    if (!messagesContainerRef.current) return
-    const el = messagesContainerRef.current
-    const distanciaAbajo = el.scrollHeight - (el.scrollTop + el.clientHeight)
+    if (!messagesContainerRef.current) return;
+    const el = messagesContainerRef.current;
+    const distanciaAbajo = el.scrollHeight - (el.scrollTop + el.clientHeight);
     // Si está a menos de 80px del fondo, mantenemos autoscroll
-    setAutoScroll(distanciaAbajo < 80)
-  }
+    setAutoScroll(distanciaAbajo < 80);
+  };
 
   // Conectar y configurar WebSocket cuando el componente se monta
   useEffect(() => {
     // Conectar al WebSocket
-    chatbotWS.connect()
+    chatbotWS
+      .connect()
       .then(() => {
         console.log("WebSocket conectado");
         setConnected(true);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error al conectar WebSocket:", error);
       });
 
     // Manejar mensajes recibidos
-  const unsubscribeWelcome = chatbotWS.onMessage('bienvenida', (data) => {
-      setMessages([{
-        id: Date.now().toString(),
-        content: data.respuesta,
-        sender: 'bot',
-        timestamp: new Date(),
-        suggestions: data.sugerencias
-      }]);
+    const unsubscribeWelcome = chatbotWS.onMessage("bienvenida", (data) => {
+      setMessages([
+        {
+          id: Date.now().toString(),
+          content: data.respuesta,
+          sender: "bot",
+          timestamp: new Date(),
+          suggestions: data.sugerencias,
+        },
+      ]);
     });
 
-  const unsubscribeMessage = chatbotWS.onMessage('mensaje', (data) => {
+    const unsubscribeMessage = chatbotWS.onMessage("mensaje", (data) => {
       setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        content: data.respuesta,
-        sender: 'bot',
-        timestamp: new Date(),
-        suggestions: data.sugerencias
-      }]);
-      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: data.respuesta,
+          sender: "bot",
+          timestamp: new Date(),
+          suggestions: data.sugerencias,
+        },
+      ]);
+
       // Actualizar contexto si existe
       if (data.contexto_actualizado) {
         setContext(data.contexto_actualizado);
       }
     });
 
-    const unsubscribeInfo = chatbotWS.onMessage('info', (data) => {
+    const unsubscribeInfo = chatbotWS.onMessage("info", (data) => {
       setIsTyping(false);
       // Manejar la información recibida (especialidades, doctores, etc.)
       console.log("Información recibida:", data);
-      
+
       // Por ejemplo, mostrar un mensaje con las especialidades
       if (data.data?.especialidades?.length > 0) {
-        const especialidades = data.data.especialidades.map((e: any) => e.nombre).join(", ");
-        setMessages(prev => [...prev, {
-          id: Date.now().toString(),
-          content: `Especialidades disponibles: ${especialidades}`,
-          sender: 'bot',
-          timestamp: new Date(),
-        }]);
+        const especialidades = data.data.especialidades
+          .map((e: any) => e.nombre)
+          .join(", ");
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            content: `Especialidades disponibles: ${especialidades}`,
+            sender: "bot",
+            timestamp: new Date(),
+          },
+        ]);
       }
     });
 
-  const unsubscribeCitaRegistrada = chatbotWS.onMessage('cita_registrada', (data) => {
-      setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        content: `¡Cita registrada exitosamente! Detalles:\nPaciente: ${data.data.paciente}\nDoctor: ${data.data.doctor}\nFecha: ${data.data.fecha}\nHora: ${data.data.hora_inicio}`,
-        sender: 'bot',
-        timestamp: new Date(),
-      }]);
-    });
+    const unsubscribeCitaRegistrada = chatbotWS.onMessage(
+      "cita_registrada",
+      (data) => {
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            content: `¡Cita registrada exitosamente! Detalles:\nPaciente: ${data.data.paciente}\nDoctor: ${data.data.doctor}\nFecha: ${data.data.fecha}\nHora: ${data.data.hora_inicio}`,
+            sender: "bot",
+            timestamp: new Date(),
+          },
+        ]);
+      }
+    );
 
-    const unsubscribeError = chatbotWS.onMessage('error', (data) => {
+    const unsubscribeError = chatbotWS.onMessage("error", (data) => {
       setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        content: `Error: ${data.mensaje}`,
-        sender: 'bot',
-        timestamp: new Date(),
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: `Error: ${data.mensaje}`,
+          sender: "bot",
+          timestamp: new Date(),
+        },
+      ]);
     });
 
     // Limpiar suscripciones al desmontar
@@ -158,24 +189,24 @@ export default function ChatbotPage() {
     chatbotWS.send({
       mensaje: inputValue,
       contexto: context,
-      accion: 'mensaje'
+      accion: "mensaje",
     });
   };
 
   const handleRequestInfo = () => {
     setIsTyping(true);
     chatbotWS.send({
-      accion: 'obtener_info',
-      contexto: context
+      accion: "obtener_info",
+      contexto: context,
     });
   };
 
   const handleRegistrarCita = (datos: any) => {
     setIsTyping(true);
     chatbotWS.send({
-      accion: 'registrar_cita',
+      accion: "registrar_cita",
       ...datos,
-      contexto: context
+      contexto: context,
     });
   };
 
@@ -192,7 +223,39 @@ export default function ChatbotPage() {
       handleSendMessage();
     }, 100);
   };
-  
+
+  // Valoración del chat
+  const [showRating, setShowRating] = useState(false);
+  const [ratingStep, setRatingStep] = useState<
+    "score" | "comment" | "done"
+  >("score");
+  const [selectedFace, setSelectedFace] = useState<number | null>(null);
+  const [selectedScore, setSelectedScore] = useState<number | null>(null);
+  const [ratingComment, setRatingComment] = useState("");
+
+  const handleOpenRating = () => {
+    setShowRating(true);
+    setRatingStep("score");
+    setSelectedScore(null);
+    setRatingComment("");
+  };
+
+  const handleSelectScore = (score: number) => {
+    setSelectedScore(score);
+    setRatingStep("comment");
+  };
+      const handleSendRating = () => {
+        setRatingStep("done");
+        setTimeout(() => setShowRating(false), 1500);
+      };
+      const handleClearChat = () => {
+        setMessages([]);
+      };
+      const handleCloseRating = () => {
+        setShowRating(false);
+      };
+
+
   return (
     <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 transition-colors duration-300">
       {/* Elementos decorativos flotantes */}
@@ -202,7 +265,7 @@ export default function ChatbotPage() {
         <div className="absolute bottom-36 left-1/3 w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-full blur-2xl animate-float" />
         <div className="absolute top-1/2 right-16 w-10 h-10 bg-accent/30 dark:bg-accent/40 rounded-full blur-md animate-bounce-gentle" />
       </div>
-  
+
       <div className="container mx-auto px-4 py-10 max-w-3xl relative z-10">
         {/* Header */}
         <div className="text-center mb-10 animate-fade-in">
@@ -219,9 +282,11 @@ export default function ChatbotPage() {
           <h1 className="text-4xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2 tracking-tight drop-shadow">
             Chat Bot AI
           </h1>
-          <p className="text-muted-foreground dark:text-gray-300 text-lg font-medium">Tu asistente inteligente siempre disponible</p>
+          <p className="text-muted-foreground dark:text-gray-300 text-lg font-medium">
+            Tu asistente inteligente siempre disponible
+          </p>
         </div>
-  
+
         {/* Chat Container */}
         <Card className="border-none shadow-2xl overflow-hidden rounded-3xl bg-card dark:bg-gray-900 dark:shadow-gray-800 transition-colors duration-300">
           {/* Chat Header */}
@@ -235,17 +300,36 @@ export default function ChatbotPage() {
               <div>
                 <h3 className="font-semibold text-lg">Asistente AI</h3>
                 <div className="text-sm text-white/80 flex items-center gap-2">
-                  <span className={`w-2 h-2 ${connected ? 'bg-green-400' : 'bg-red-400'} rounded-full animate-pulse inline-block`} />
-                  <span>{connected ? 'En línea' : 'Conectando...'}</span>
+                  <span
+                    className={`w-2 h-2 ${
+                      connected ? "bg-green-400" : "bg-red-400"
+                    } rounded-full animate-pulse inline-block`}
+                  />
+                  <span>{connected ? "En línea" : "Conectando..."}</span>
                 </div>
               </div>
+              {/* Iconos funcionales */}
               <div className="ml-auto flex gap-3">
-                <MessageCircle className="w-5 h-5 text-white/70" />
-                <Zap className="w-5 h-5 text-white/70" />
+                <button
+                  type="button"
+                  title="Valorar"
+                  onClick={handleOpenRating}
+                  className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition"
+                >
+                  <Smile className="w-6 h-6 text-white" />
+                </button>
+                <button
+                  type="button"
+                  title="Limpiar chat"
+                  onClick={handleClearChat}
+                  className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition"
+                >
+                  <Trash className="w-5 h-5 text-white/70" />
+                </button>
               </div>
             </div>
           </div>
-  
+
           {/* Messages */}
           <div
             ref={messagesContainerRef}
@@ -255,8 +339,12 @@ export default function ChatbotPage() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"} ${
-                  message.sender === "user" ? "animate-slide-in-right" : "animate-slide-in-left"
+                className={`flex gap-3 ${
+                  message.sender === "user" ? "justify-end" : "justify-start"
+                } ${
+                  message.sender === "user"
+                    ? "animate-slide-in-right"
+                    : "animate-slide-in-left"
                 }`}
               >
                 {message.sender === "bot" && (
@@ -266,7 +354,7 @@ export default function ChatbotPage() {
                     </AvatarFallback>
                   </Avatar>
                 )}
-  
+
                 <div
                   className={`max-w-xs lg:max-w-md px-5 py-4 rounded-2xl shadow-lg transition-all duration-200 ${
                     message.sender === "user"
@@ -276,7 +364,11 @@ export default function ChatbotPage() {
                 >
                   <p className="text-base leading-relaxed">{message.content}</p>
                   <p
-                    className={`text-xs mt-2 ${message.sender === "user" ? "text-white/70" : "text-muted-foreground dark:text-gray-400"}`}
+                    className={`text-xs mt-2 ${
+                      message.sender === "user"
+                        ? "text-white/70"
+                        : "text-muted-foreground dark:text-gray-400"
+                    }`}
                   >
                     {message.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
@@ -284,7 +376,7 @@ export default function ChatbotPage() {
                     })}
                   </p>
                 </div>
-  
+
                 {message.sender === "user" && (
                   <Avatar className="w-8 h-8 mt-1">
                     <AvatarFallback className="bg-secondary dark:bg-secondary/80 text-white">
@@ -294,23 +386,26 @@ export default function ChatbotPage() {
                 )}
               </div>
             ))}
-  
+
             {/* Sugerencias del último mensaje */}
-            {messages.length > 0 && messages[messages.length - 1].suggestions && (
-              <div className="flex flex-wrap gap-2 justify-start mt-2">
-                {messages[messages.length - 1].suggestions!.map((suggestion, index) => (
-                  <Button 
-                    key={index}
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                    className="bg-card dark:bg-gray-800 text-sm text-foreground dark:text-gray-200 hover:bg-primary/20 dark:hover:bg-primary/30 border-accent/30 rounded-xl shadow"
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            )}
+            {messages.length > 0 &&
+              messages[messages.length - 1].suggestions && (
+                <div className="flex flex-wrap gap-2 justify-start mt-2">
+                  {messages[messages.length - 1].suggestions!.map(
+                    (suggestion, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="bg-card dark:bg-gray-800 text-sm text-foreground dark:text-gray-200 hover:bg-primary/20 dark:hover:bg-primary/30 border-accent/30 rounded-xl shadow"
+                      >
+                        {suggestion}
+                      </Button>
+                    )
+                  )}
+                </div>
+              )}
             {isTyping && (
               <div className="flex gap-3 justify-start animate-slide-in-left">
                 <Avatar className="w-8 h-8 mt-1">
@@ -335,7 +430,7 @@ export default function ChatbotPage() {
             )}
             <div ref={messagesEndRef} />
           </div>
-  
+
           {/* Input Area */}
           <div className="p-5 bg-card dark:bg-gray-900/80 backdrop-blur-md border-t border-border dark:border-gray-700 rounded-b-3xl transition-colors duration-300">
             <div className="flex gap-4 items-end">
@@ -360,6 +455,68 @@ export default function ChatbotPage() {
           </div>
         </Card>
       </div>
+      {showRating && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-950 rounded-3xl shadow-2xl px-10 py-12 w-full max-w-xl relative flex flex-col items-center border border-gray-200 dark:border-gray-800">
+            <button
+              className="absolute top-4 right-6 text-gray-400 hover:text-primary dark:hover:text-accent text-3xl font-bold transition"
+              onClick={handleCloseRating}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+            {ratingStep === "score" && (
+              <div className="flex flex-col items-center gap-6 w-full">
+                <span className="font-semibold text-2xl mb-2 text-gray-900 dark:text-gray-100">
+                  Califica tu experiencia
+                </span>
+                <div className="flex gap-2 items-center w-full justify-center flex-nowrap overflow-x-auto pb-2">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((score) => (
+                    <button
+                      key={score}
+                      onClick={() => handleSelectScore(score)}
+                      className={`px-3 py-2 rounded-full border font-bold text-base focus:outline-none transition-all duration-150 min-w-[2.2rem] shadow-sm ${
+                        selectedScore === score
+                          ? "bg-primary text-white scale-110 shadow-lg border-primary"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-primary/10 dark:hover:bg-primary/20"
+                      }`}
+                      style={{ boxShadow: selectedScore === score ? "0 2px 8px rgba(0,0,0,0.12)" : undefined }}
+                    >
+                      {score}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex w-full justify-between px-2">
+                  <span className="text-base text-gray-400">Deficiente</span>
+                  <span className="text-base text-gray-400">Excelente</span>
+                </div>
+              </div>
+            )}
+            {ratingStep === "comment" && (
+              <div className="flex flex-col gap-6 w-full">
+                <span className="font-semibold text-xl mb-2 text-gray-900 dark:text-gray-100">
+                ¿Cómo podemos mejorar tu experiencia?
+                </span>
+                <textarea
+                  value={ratingComment}
+                  onChange={(e) => setRatingComment(e.target.value)}
+                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-lg focus:ring-2 focus:ring-primary/40"
+                  rows={4}
+                  placeholder="Escribe tu comentario..."
+                />
+                <Button onClick={handleSendRating} className="w-full text-lg py-3 bg-primary text-white rounded-xl shadow-md hover:bg-primary/90">
+                  Enviar
+                </Button>
+              </div>
+            )}
+            {ratingStep === "done" && (
+              <div className="flex flex-col items-center gap-6">
+                <span className="text-3xl text-primary dark:text-accent font-bold">¡Gracias por tu valoración!</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
