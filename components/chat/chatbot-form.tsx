@@ -192,65 +192,65 @@ export default function ChatbotPage() {
       handleSendMessage();
     }, 100);
   };
-
+  
   return (
-    <div className="min-h-screen gradient-bg animate-gradient">
-      {/* Floating decorative elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-16 h-16 bg-accent/20 rounded-full animate-float" />
-        <div className="absolute top-40 right-20 w-12 h-12 bg-secondary/20 rounded-full animate-bounce-gentle" />
-        <div className="absolute bottom-32 left-1/4 w-20 h-20 bg-primary/10 rounded-full animate-float" />
-        <div className="absolute top-1/3 right-10 w-8 h-8 bg-accent/30 rounded-full animate-bounce-gentle" />
+    <div className="min-h-screen bg-background dark:bg-gradient-to-br dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 transition-colors duration-300">
+      {/* Elementos decorativos flotantes */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-24 left-12 w-20 h-20 bg-accent/20 dark:bg-accent/30 rounded-full blur-xl animate-float" />
+        <div className="absolute top-48 right-24 w-14 h-14 bg-secondary/20 dark:bg-secondary/30 rounded-full blur-lg animate-bounce-gentle" />
+        <div className="absolute bottom-36 left-1/3 w-24 h-24 bg-primary/10 dark:bg-primary/20 rounded-full blur-2xl animate-float" />
+        <div className="absolute top-1/2 right-16 w-10 h-10 bg-accent/30 dark:bg-accent/40 rounded-full blur-md animate-bounce-gentle" />
       </div>
-
-      <div className="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+  
+      <div className="container mx-auto px-4 py-10 max-w-3xl relative z-10">
         {/* Header */}
-        <div className="text-center mb-8 animate-slide-in-left">
-          <div className="flex items-center justify-center gap-3 mb-4">
+        <div className="text-center mb-10 animate-fade-in">
+          <div className="flex items-center justify-center gap-4 mb-4">
             <div className="relative">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center animate-pulse-glow">
-                <Bot className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent rounded-2xl flex items-center justify-center shadow-lg animate-pulse-glow">
+                <Bot className="w-8 h-8 text-white drop-shadow" />
               </div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 bg-secondary rounded-full flex items-center justify-center">
-                <Sparkles className="w-3 h-3 text-white" />
+              <div className="absolute -top-2 -right-2 w-7 h-7 bg-secondary dark:bg-secondary/80 rounded-full flex items-center justify-center shadow animate-bounce">
+                <Sparkles className="w-4 h-4 text-white" />
               </div>
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2 tracking-tight drop-shadow">
             Chat Bot AI
           </h1>
-          <p className="text-muted-foreground text-lg">Tu asistente inteligente siempre disponible</p>
+          <p className="text-muted-foreground dark:text-gray-300 text-lg font-medium">Tu asistente inteligente siempre disponible</p>
         </div>
-
+  
         {/* Chat Container */}
-        <Card className="glass-effect border-0 shadow-2xl overflow-hidden">
+        <Card className="border-none shadow-2xl overflow-hidden rounded-3xl bg-card dark:bg-gray-900 dark:shadow-gray-800 transition-colors duration-300">
           {/* Chat Header */}
-          <div className="bg-gradient-to-r from-primary to-accent p-4 text-white">
-            <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10 border-2 border-white/20">
-                <AvatarFallback className="bg-white/20 text-white">
+          <div className="bg-primary dark:bg-gradient-to-r dark:from-primary dark:to-accent p-5 text-white rounded-t-3xl shadow-md">
+            <div className="flex items-center gap-4">
+              <Avatar className="w-11 h-11 border-2 border-white/30 shadow">
+                <AvatarFallback className="bg-white/20 dark:bg-gray-800 text-white">
                   <Bot className="w-5 h-5" />
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-semibold">Asistente AI</h3>
-                <div className="text-sm text-white/80 flex items-center gap-1">
+                <h3 className="font-semibold text-lg">Asistente AI</h3>
+                <div className="text-sm text-white/80 flex items-center gap-2">
                   <span className={`w-2 h-2 ${connected ? 'bg-green-400' : 'bg-red-400'} rounded-full animate-pulse inline-block`} />
                   <span>{connected ? 'En línea' : 'Conectando...'}</span>
                 </div>
               </div>
-              <div className="ml-auto flex gap-2">
-                <MessageCircle className="w-5 h-5 text-white/60" />
-                <Zap className="w-5 h-5 text-white/60" />
+              <div className="ml-auto flex gap-3">
+                <MessageCircle className="w-5 h-5 text-white/70" />
+                <Zap className="w-5 h-5 text-white/70" />
               </div>
             </div>
           </div>
-
+  
           {/* Messages */}
           <div
             ref={messagesContainerRef}
             onScroll={handleScroll}
-            className="h-96 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-background/50 to-background/80"
+            className="h-96 overflow-y-auto p-6 space-y-5 bg-background dark:bg-gray-900 transition-colors duration-300"
           >
             {messages.map((message) => (
               <div
@@ -261,22 +261,22 @@ export default function ChatbotPage() {
               >
                 {message.sender === "bot" && (
                   <Avatar className="w-8 h-8 mt-1">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
+                    <AvatarFallback className="bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent text-white">
                       <Bot className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
                 )}
-
+  
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl shadow-lg ${
+                  className={`max-w-xs lg:max-w-md px-5 py-4 rounded-2xl shadow-lg transition-all duration-200 ${
                     message.sender === "user"
-                      ? "bg-gradient-to-r from-primary to-accent text-white rounded-br-md"
-                      : "bg-card border border-border rounded-bl-md"
+                      ? "bg-primary text-white rounded-br-md"
+                      : "bg-card dark:bg-gray-800 border border-border dark:border-gray-700 rounded-bl-md"
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  <p className="text-base leading-relaxed">{message.content}</p>
                   <p
-                    className={`text-xs mt-1 ${message.sender === "user" ? "text-white/70" : "text-muted-foreground"}`}
+                    className={`text-xs mt-2 ${message.sender === "user" ? "text-white/70" : "text-muted-foreground dark:text-gray-400"}`}
                   >
                     {message.timestamp.toLocaleTimeString([], {
                       hour: "2-digit",
@@ -284,27 +284,27 @@ export default function ChatbotPage() {
                     })}
                   </p>
                 </div>
-
+  
                 {message.sender === "user" && (
                   <Avatar className="w-8 h-8 mt-1">
-                    <AvatarFallback className="bg-secondary text-white">
+                    <AvatarFallback className="bg-secondary dark:bg-secondary/80 text-white">
                       <User className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
                 )}
               </div>
             ))}
-
+  
             {/* Sugerencias del último mensaje */}
             {messages.length > 0 && messages[messages.length - 1].suggestions && (
-              <div className="flex flex-wrap gap-2 justify-start">
+              <div className="flex flex-wrap gap-2 justify-start mt-2">
                 {messages[messages.length - 1].suggestions!.map((suggestion, index) => (
                   <Button 
                     key={index}
                     variant="outline" 
                     size="sm"
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="bg-card/50 text-sm text-foreground hover:bg-primary/10"
+                    className="bg-card dark:bg-gray-800 text-sm text-foreground dark:text-gray-200 hover:bg-primary/20 dark:hover:bg-primary/30 border-accent/30 rounded-xl shadow"
                   >
                     {suggestion}
                   </Button>
@@ -314,19 +314,19 @@ export default function ChatbotPage() {
             {isTyping && (
               <div className="flex gap-3 justify-start animate-slide-in-left">
                 <Avatar className="w-8 h-8 mt-1">
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-white">
+                  <AvatarFallback className="bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent text-white">
                     <Bot className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
-                <div className="bg-card border border-border px-4 py-3 rounded-2xl rounded-bl-md shadow-lg">
+                <div className="bg-card dark:bg-gray-800 border border-border dark:border-gray-700 px-5 py-4 rounded-2xl rounded-bl-md shadow-lg">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-muted-foreground rounded-full animate-typing" />
+                    <div className="w-2 h-2 bg-muted-foreground dark:bg-gray-400 rounded-full animate-typing" />
                     <div
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-typing"
+                      className="w-2 h-2 bg-muted-foreground dark:bg-gray-400 rounded-full animate-typing"
                       style={{ animationDelay: "0.2s" }}
                     />
                     <div
-                      className="w-2 h-2 bg-muted-foreground rounded-full animate-typing"
+                      className="w-2 h-2 bg-muted-foreground dark:bg-gray-400 rounded-full animate-typing"
                       style={{ animationDelay: "0.4s" }}
                     />
                   </div>
@@ -335,10 +335,10 @@ export default function ChatbotPage() {
             )}
             <div ref={messagesEndRef} />
           </div>
-
+  
           {/* Input Area */}
-          <div className="p-4 bg-card/80 backdrop-blur-sm border-t border-border">
-            <div className="flex gap-3 items-end">
+          <div className="p-5 bg-card dark:bg-gray-900/80 backdrop-blur-md border-t border-border dark:border-gray-700 rounded-b-3xl transition-colors duration-300">
+            <div className="flex gap-4 items-end">
               <div className="flex-1">
                 <Input
                   value={inputValue}
@@ -346,15 +346,15 @@ export default function ChatbotPage() {
                   onKeyPress={handleKeyPress}
                   placeholder="Escribe tu mensaje aquí..."
                   disabled={!connected}
-                  className="border-2 border-border/50 focus:border-accent rounded-xl px-4 py-3 text-sm resize-none transition-all duration-200"
+                  className="border-2 border-border/50 dark:border-gray-700 focus:border-accent dark:focus:border-accent rounded-xl px-5 py-4 text-base resize-none transition-all duration-200 bg-white dark:bg-gray-900 text-black dark:text-gray-200"
                 />
               </div>
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isTyping || !connected}
-                className="bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white rounded-xl px-6 py-3 shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 dark:bg-gradient-to-r dark:from-primary dark:to-accent text-white rounded-xl px-7 py-4 shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </Button>
             </div>
           </div>
