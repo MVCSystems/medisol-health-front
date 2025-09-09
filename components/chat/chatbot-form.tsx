@@ -359,34 +359,6 @@ export default function ChatbotPage() {
             </div>
           </div>
         </Card>
-
-        {/* Quick Actions */}
-        <div className="mt-6 flex flex-wrap gap-3 justify-center animate-slide-in-right">
-          <Button
-            variant="outline"
-            onClick={() => handleRequestInfo()}
-            disabled={isTyping || !connected}
-            className="glass-effect border-border/50 hover:bg-accent/10 hover:border-accent/50 transition-all duration-200"
-          >
-            Ver especialidades
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setInputValue("Quiero reservar una cita")}
-            disabled={isTyping || !connected}
-            className="glass-effect border-border/50 hover:bg-accent/10 hover:border-accent/50 transition-all duration-200"
-          >
-            Reservar cita
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => setInputValue("¿Qué doctores están disponibles?")}
-            disabled={isTyping || !connected}
-            className="glass-effect border-border/50 hover:bg-accent/10 hover:border-accent/50 transition-all duration-200"
-          >
-            Doctores disponibles
-          </Button>
-        </div>
       </div>
     </div>
   )
