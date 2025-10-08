@@ -1,15 +1,19 @@
 import { siteConfig } from "@/config";
 import { useAuthStore } from "@/store/authStore";
 
+// Tipos para WebSocket
+type MessageHandler = (data: Record<string, unknown>) => void;
+type ConnectionHandler = () => void;
+
 // Clase para manejar conexiones WebSocket
 class WebSocketService {
   private socket: WebSocket | null = null;
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeout: NodeJS.Timeout | null = null;
-  private messageHandlers: Map<string, ((data: any) => void)[]> = new Map();
-  private connectionHandlers: (() => void)[] = [];
-  private disconnectionHandlers: (() => void)[] = [];
+  private messageHandlers: Map<string, MessageHandler[]> = new Map();
+  private connectionHandlers: ConnectionHandler[] = [];
+  private disconnectionHandlers: ConnectionHandler[] = [];
   private url: string;
 
   constructor(path: string) {
@@ -82,7 +86,7 @@ class WebSocketService {
     }
   }
 
-  public send(data: any): void {
+  public send(data: Record<string, unknown>): void {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       this.connect().then(() => {
         this.socket?.send(JSON.stringify(data));
@@ -95,7 +99,7 @@ class WebSocketService {
     this.socket.send(JSON.stringify(data));
   }
 
-  public onMessage(type: string, callback: (data: any) => void): () => void {
+  public onMessage(type: string, callback: MessageHandler): () => void {
     if (!this.messageHandlers.has(type)) {
       this.messageHandlers.set(type, []);
     }

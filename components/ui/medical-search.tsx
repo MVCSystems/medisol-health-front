@@ -18,7 +18,7 @@ import {
   Phone,
   AlertCircle
 } from "lucide-react";
-import Link from "next/link";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 // import useSWR from "swr";
 // import { fetcher } from "@/lib/axios";
@@ -492,7 +492,7 @@ export default function MedicalSearch() {
               <Search className="h-16 w-16 text-gray-400" />
             </div>
             <h3 className="text-2xl font-bold text-gray-700 mb-3">Sin resultados</h3>
-            <p className="text-gray-500 mb-2 text-lg">No se encontraron resultados para "{searchTerm}"</p>
+            <p className="text-gray-500 mb-2 text-lg">No se encontraron resultados para &quot;{searchTerm}&quot;</p>
             <p className="text-gray-400">
               Intenta buscar por especialidad, nombre del médico o servicio médico
             </p>

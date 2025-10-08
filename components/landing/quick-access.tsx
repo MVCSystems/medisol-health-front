@@ -44,7 +44,18 @@ const options = [
   },
 ];
 
-function Card({ href, title, icon, bg, iconBg, text, border, hover }: any) {
+interface CardProps {
+  href: string;
+  title: string;
+  icon: React.ReactNode;
+  bg: React.CSSProperties;
+  iconBg: React.CSSProperties;
+  text: string;
+  border: React.CSSProperties;
+  hover: React.CSSProperties;
+}
+
+function Card({ href, title, icon, bg, iconBg, text, border, hover }: CardProps) {
   return (
     <Link href={href} className="group">
       <div

@@ -12,10 +12,8 @@ import {
   User,
   Sparkles,
   Trash,
-  Frown,
-  Meh,
   Smile,
-  Laugh,
+
 } from "lucide-react";
 // ...existing code...
 import { chatbotWS } from "@/lib/websocket";
@@ -28,12 +26,29 @@ interface Message {
   suggestions?: string[];
 }
 
+interface EspecialidadData {
+  nombre: string;
+}
+
+interface ChatbotApiResponse {
+  respuesta: string;
+  sugerencias?: string[];
+  contexto_actualizado?: Record<string, unknown>;
+  data?: {
+    especialidades?: EspecialidadData[];
+    paciente?: string;
+    doctor?: string;
+    fecha?: string;
+    hora_inicio?: string;
+  };
+}
+
 export default function ChatbotPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [connected, setConnected] = useState(false);
-  const [context, setContext] = useState<any>({});
+  const [context, setContext] = useState<Record<string, unknown>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
@@ -79,45 +94,48 @@ export default function ChatbotPage() {
 
     // Manejar mensajes recibidos
     const unsubscribeWelcome = chatbotWS.onMessage("bienvenida", (data) => {
+      const response = data as unknown as ChatbotApiResponse;
       setMessages([
         {
           id: Date.now().toString(),
-          content: data.respuesta,
+          content: response.respuesta,
           sender: "bot",
           timestamp: new Date(),
-          suggestions: data.sugerencias,
+          suggestions: response.sugerencias,
         },
       ]);
     });
 
     const unsubscribeMessage = chatbotWS.onMessage("mensaje", (data) => {
+      const response = data as unknown as ChatbotApiResponse;
       setIsTyping(false);
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now().toString(),
-          content: data.respuesta,
+          content: response.respuesta,
           sender: "bot",
           timestamp: new Date(),
-          suggestions: data.sugerencias,
+          suggestions: response.sugerencias,
         },
       ]);
 
       // Actualizar contexto si existe
-      if (data.contexto_actualizado) {
-        setContext(data.contexto_actualizado);
+      if (response.contexto_actualizado) {
+        setContext(response.contexto_actualizado);
       }
     });
 
     const unsubscribeInfo = chatbotWS.onMessage("info", (data) => {
+      const response = data as unknown as ChatbotApiResponse;
       setIsTyping(false);
       // Manejar la información recibida (especialidades, doctores, etc.)
-      console.log("Información recibida:", data);
+      console.log("Información recibida:", response);
 
       // Por ejemplo, mostrar un mensaje con las especialidades
-      if (data.data?.especialidades?.length > 0) {
-        const especialidades = data.data.especialidades
-          .map((e: any) => e.nombre)
+      if (response.data?.especialidades && response.data.especialidades.length > 0) {
+        const especialidades = response.data.especialidades
+          .map((e: EspecialidadData) => e.nombre)
           .join(", ");
         setMessages((prev) => [
           ...prev,
@@ -134,12 +152,13 @@ export default function ChatbotPage() {
     const unsubscribeCitaRegistrada = chatbotWS.onMessage(
       "cita_registrada",
       (data) => {
+        const response = data as unknown as ChatbotApiResponse;
         setIsTyping(false);
         setMessages((prev) => [
           ...prev,
           {
             id: Date.now().toString(),
-            content: `¡Cita registrada exitosamente! Detalles:\nPaciente: ${data.data.paciente}\nDoctor: ${data.data.doctor}\nFecha: ${data.data.fecha}\nHora: ${data.data.hora_inicio}`,
+            content: `¡Cita registrada exitosamente! Detalles:\nPaciente: ${response.data?.paciente || 'N/A'}\nDoctor: ${response.data?.doctor || 'N/A'}\nFecha: ${response.data?.fecha || 'N/A'}\nHora: ${response.data?.hora_inicio || 'N/A'}`,
             sender: "bot",
             timestamp: new Date(),
           },
@@ -193,22 +212,7 @@ export default function ChatbotPage() {
     });
   };
 
-  const handleRequestInfo = () => {
-    setIsTyping(true);
-    chatbotWS.send({
-      accion: "obtener_info",
-      contexto: context,
-    });
-  };
 
-  const handleRegistrarCita = (datos: any) => {
-    setIsTyping(true);
-    chatbotWS.send({
-      accion: "registrar_cita",
-      ...datos,
-      contexto: context,
-    });
-  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -229,7 +233,7 @@ export default function ChatbotPage() {
   const [ratingStep, setRatingStep] = useState<
     "score" | "comment" | "done"
   >("score");
-  const [selectedFace, setSelectedFace] = useState<number | null>(null);
+
   const [selectedScore, setSelectedScore] = useState<number | null>(null);
   const [ratingComment, setRatingComment] = useState("");
 

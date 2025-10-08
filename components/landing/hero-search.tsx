@@ -12,7 +12,7 @@ import { fetcher } from "@/lib/axios";
 import { Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSWR from "swr";
 
 // Datos de ejemplo para la sección de páginas médicas
@@ -114,12 +114,6 @@ export default function HeroSearch() {
       setIsOpen(true);
     }
   };
-
-  // Verificar si hay resultados en alguna sección
-  const hasResults =
-    results.paginas.length > 0 ||
-    (results.publicaciones && results.publicaciones.length > 0) ||
-    (results.archivos && results.archivos.length > 0);
 
   // Función para manejar la navegación a publicaciones y archivos
   const handlePublicationClick = (publication: Publication) => {
@@ -326,7 +320,7 @@ export default function HeroSearch() {
               <p style={{ color: "var(--muted-foreground)" }} className="text-sm">
                 No se encontraron resultados para{" "}
                 <span className="font-semibold" style={{ color: "var(--foreground)" }}>
-                  "{searchTerm}"
+                  &quot;{searchTerm}&quot;
                 </span>
               </p>
             </div>
