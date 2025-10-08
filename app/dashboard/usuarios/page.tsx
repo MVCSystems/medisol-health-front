@@ -1,193 +1,274 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react";
-import useSWR from "swr";
-import CustomPagination from "@/components/custom-pagination";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { UserEditForm } from "@/components/users/user-edit-form";
-import UsuarioCardItem from "@/components/users/user-card-item";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { fetcher } from "@/lib/axios";
-import type { Usuario, UsuariosResponse } from "@/types/usuarios";
-import { Plus, Search, UserPlus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
-import * as XLSX from "xlsx";
+import { useUsuarios } from "@/hooks/useUsuarios";
+import UsuarioCard from "@/components/usuarios/usuario-card";
+import UsuarioFilters from "@/components/usuarios/usuario-filters";
+import UsuarioForm from "@/components/usuarios/usuario-form";
+import DeleteConfirmDialog from "@/components/usuarios/delete-confirm-dialog";
+import { Button } from "@/components/ui/button";
+import { Plus, Users } from "lucide-react";
+import type { Usuario, CreateUsuarioData, UpdateUsuarioData } from "@/types/usuario";
 
-const LIMIT = 6;
-
-export default function Page() {
-  const user = useAuthStore((state) => state.user);
-  const [offset, setOffset] = useState(0);
+export default function UsuariosPage() {
+  const { isAdmin } = useAuthStore();
+  const searchParams = useSearchParams();
+  
+  // Estados para filtros
   const [search, setSearch] = useState("");
-  const [debounced, setDebounced] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVO" | "INACTIVO">("ALL");
-  const [openCreate, setOpenCreate] = useState(false);
+  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  
+  // Estados para modales
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
 
-  const canCreateUsers = user?.role === "ADMIN";
+  // Hook personalizado para gestión de usuarios
+  const {
+    usuarios,
+    totalCount,
+    isLoading,
+    isCreating,
+    isUpdating,
+    isDeleting,
+    createUsuario,
+    updateUsuario,
+    deleteUsuario,
+    toggleUsuarioStatus,
+    error
+  } = useUsuarios();
 
-  // Debounce para el buscador
+  // Aplicar filtro desde URL al cargar
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebounced(search);
-      setOffset(0);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [search]);
+    const roleFromUrl = searchParams.get("role");
+    if (roleFromUrl) {
+      const roleMapping: { [key: string]: string } = {
+        "ADMIN": "Administrador",
+        "DOCTOR": "Doctor", 
+        "PACIENTE": "Paciente",
+        "RECEPCIONISTA": "Recepcionista"
+      };
+      
+      const mappedRole = roleMapping[roleFromUrl] || "ALL";
+      setRoleFilter(mappedRole);
+    }
+  }, [searchParams]);
 
-  // Resetear offset cuando cambia el filtro de estado
-  useEffect(() => {
-    setOffset(0);
-  }, [statusFilter]);
+  // Control de acceso
+  if (!isAdmin()) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-destructive">Acceso Denegado</h2>
+          <p className="text-muted-foreground mt-2">
+            No tienes permisos para ver usuarios
+          </p>
+        </div>
+      </div>
+    );
+  }
 
-  const { data, isLoading, error, mutate } = useSWR<UsuariosResponse>(
-    `/user/?&search=${debounced}&offset=${offset}&limit=${LIMIT}${statusFilter !== "ALL" ? `&status=${statusFilter}` : ""}`,
-    fetcher,
-    { keepPreviousData: true }
-  );
+  // Handlers para modales
+  const handleCreateClick = () => {
+    setSelectedUsuario(null);
+    setShowCreateForm(true);
+  };
 
-  const exportUsuariosToExcel = async () => {
-    try {
-      const params = new URLSearchParams({ limit: "10000" });
-      if (statusFilter !== "ALL") params.append("status", statusFilter);
-      if (debounced) params.append("search", debounced);
+  const handleEditClick = (usuario: Usuario) => {
+    setSelectedUsuario(usuario);
+    setShowEditForm(true);
+  };
 
-      const allData = await fetcher(`/user/?${params}`);
-      if (!allData?.results?.length) return;
+  const handleDeleteClick = (usuario: Usuario) => {
+    setSelectedUsuario(usuario);
+    setShowDeleteDialog(true);
+  };
 
-      const exportData = allData.results.map((usuario: Usuario) => ({
-        ID: usuario.id,
-        Nombre: usuario.name,
-        DNI: usuario.dni,
-        Email: usuario.email,
-        Rol: usuario.role,
-        Estado: usuario.status === "ACTIVO" ? "Activo" : "Inactivo",
-        "Fecha de Creación": usuario.createdAt ? new Date(usuario.createdAt).toLocaleDateString('es-ES') : 'N/A',
-      }));
+  const handleViewClick = (usuario: Usuario) => {
+    // Implementar vista detallada si es necesario
+    console.log("Ver usuario:", usuario);
+  };
 
-      const worksheet = XLSX.utils.json_to_sheet(exportData);
-      const workbook = XLSX.utils.book_new();
-      const sheetName = statusFilter === "ALL" ? "Usuarios" : `Usuarios-${statusFilter}`;
-      XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-      const fileName = statusFilter === "ALL" ? "usuarios.xlsx" : `usuarios-${statusFilter.toLowerCase()}.xlsx`;
-      XLSX.writeFile(workbook, fileName);
-    } catch (error) {
-      console.error("Error al exportar:", error);
+  const handleToggleStatus = async (usuario: Usuario) => {
+    await toggleUsuarioStatus(usuario.id, !usuario.is_active);
+  };
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setRoleFilter("ALL");
+    setStatusFilter("ALL");
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (selectedUsuario) {
+      const success = await deleteUsuario(selectedUsuario.id);
+      if (success) {
+        setShowDeleteDialog(false);
+        setSelectedUsuario(null);
+      }
     }
   };
 
-  const pages = useMemo(() => (data?.count ? Math.ceil(data.count / LIMIT) : 0), [data?.count]);
+  const handleCreateSubmit = async (data: CreateUsuarioData | UpdateUsuarioData) => {
+    const result = await createUsuario(data as CreateUsuarioData);
+    if (result) {
+      setShowCreateForm(false);
+    }
+    return result;
+  };
 
-  if (error) {
-    const errorMessage = error?.response?.status === 403
-      ? "Acceso denegado. No tienes permisos para ver esta sección."
-      : "Ocurrió un error al cargar los usuarios.";
-    return <div className="flex items-center justify-center h-full text-lg text-destructive">{errorMessage}</div>;
-  }
+  const handleEditSubmit = async (data: CreateUsuarioData | UpdateUsuarioData) => {
+    if (selectedUsuario) {
+      const result = await updateUsuario(selectedUsuario.id, data as UpdateUsuarioData);
+      if (result) {
+        setShowEditForm(false);
+        setSelectedUsuario(null);
+      }
+      return result;
+    }
+    return null;
+  };
+
+  // Filtrar usuarios
+  const filteredUsuarios = usuarios.filter((usuario: Usuario) => {
+    const matchesSearch = 
+      usuario.first_name?.toLowerCase().includes(search.toLowerCase()) ||
+      usuario.last_name?.toLowerCase().includes(search.toLowerCase()) ||
+      usuario.dni?.includes(search) ||
+      usuario.email?.toLowerCase().includes(search.toLowerCase());
+
+    const matchesRole = roleFilter === "ALL" || 
+      usuario.roles?.some((role) => role.rol_nombre === roleFilter);
+
+    const matchesStatus = statusFilter === "ALL" ||
+      (statusFilter === "ACTIVE" && usuario.is_active) ||
+      (statusFilter === "INACTIVE" && !usuario.is_active);
+
+    return matchesSearch && matchesRole && matchesStatus;
+  });
 
   return (
-    <div className="flex flex-col gap-6 h-full p-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
-        {canCreateUsers && (
-          <Button onClick={() => setOpenCreate(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nuevo Usuario
-          </Button>
-        )}
-      </div>
-
-      {/* Modal para crear nuevo usuario */}
-      <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <UserPlus className="h-6 w-6 text-primary" />
-              </div>
-              Crear Nuevo Usuario
-            </DialogTitle>
-          </DialogHeader>
-          <UserEditForm
-            onSuccess={() => {
-              setOpenCreate(false);
-              mutate();
-            }}
-            onCancel={() => setOpenCreate(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Search and Controls */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar usuarios..."
-            className="pl-10"
-          />
-        </div>
-
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={exportUsuariosToExcel}>
-            Exportar Excel
-          </Button>
-
-          <div className="flex border rounded-md">
-            {[
-              { key: "ALL", label: "Todos" },
-              { key: "ACTIVO", label: "Activos" },
-              { key: "INACTIVO", label: "Inactivos" }
-            ].map(({ key, label }) => (
-              <Button
-                key={key}
-                variant={statusFilter === key ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setStatusFilter(key as typeof statusFilter)}
-                className="rounded-none first:rounded-l-md last:rounded-r-md"
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : data?.results?.length ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {data.results.map((usuario) => (
-              <UsuarioCardItem key={usuario.id} usuario={usuario} mutate={mutate} />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-            <h3 className="text-lg font-medium mb-2">No se encontraron usuarios</h3>
-            <p className="text-sm">
-              {search ? "Intenta con otros términos de búsqueda" : "No hay usuarios registrados aún"}
+          <Users className="h-8 w-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+            <p className="text-muted-foreground">
+              Administra usuarios del sistema médico ({totalCount} usuarios)
             </p>
           </div>
-        )}
+        </div>
+        <Button onClick={handleCreateClick} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Nuevo Usuario
+        </Button>
       </div>
 
-      {/* Pagination */}
-      {data && data.count > LIMIT && (
-        <div className="flex justify-center">
-          <CustomPagination
-            total={pages}
-            page={Math.floor(offset / LIMIT) + 1}
-            setPage={(page) => setOffset((page - 1) * LIMIT)}
-          />
+      {/* Filtros */}
+      <UsuarioFilters
+        search={search}
+        setSearch={setSearch}
+        roleFilter={roleFilter}
+        setRoleFilter={setRoleFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        onClearFilters={handleClearFilters}
+        totalResults={filteredUsuarios.length}
+      />
+
+      {/* Contenido */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Cargando usuarios...</p>
+          </div>
+        </div>
+      ) : error ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <h3 className="text-lg font-semibold text-destructive mb-2">
+              Error al cargar usuarios
+            </h3>
+            <p className="text-muted-foreground mb-4">
+              No se pudieron cargar los usuarios del sistema
+            </p>
+            <Button onClick={() => window.location.reload()}>
+              Reintentar
+            </Button>
+          </div>
+        </div>
+      ) : filteredUsuarios.length === 0 ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No se encontraron usuarios</h3>
+            <p className="text-muted-foreground mb-4">
+              {usuarios.length === 0 
+                ? "No hay usuarios registrados en el sistema"
+                : "No hay usuarios que coincidan con los filtros aplicados"
+              }
+            </p>
+            {usuarios.length === 0 && (
+              <Button onClick={handleCreateClick} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Crear Primer Usuario
+              </Button>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredUsuarios.map((usuario) => (
+            <UsuarioCard
+              key={usuario.id}
+              usuario={usuario}
+              onEdit={handleEditClick}
+              onDelete={handleDeleteClick}
+              onView={handleViewClick}
+              onToggleStatus={handleToggleStatus}
+            />
+          ))}
         </div>
       )}
+
+      {/* Modales */}
+      <UsuarioForm
+        open={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        onSubmit={handleCreateSubmit}
+        mode="create"
+        isLoading={isCreating}
+      />
+
+      <UsuarioForm
+        open={showEditForm}
+        onClose={() => {
+          setShowEditForm(false);
+          setSelectedUsuario(null);
+        }}
+        onSubmit={handleEditSubmit}
+        usuario={selectedUsuario}
+        mode="edit"
+        isLoading={isUpdating}
+      />
+
+      <DeleteConfirmDialog
+        open={showDeleteDialog}
+        onClose={() => {
+          setShowDeleteDialog(false);
+          setSelectedUsuario(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        usuario={selectedUsuario}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

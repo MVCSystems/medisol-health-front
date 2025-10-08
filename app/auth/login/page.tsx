@@ -1,9 +1,29 @@
+"use client"
+
 import { HospitalIcon, Home } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 import BackgroundMedicalIcons from "@/components/auth/background-medical-icons";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
 
 export default function LoginPage() {
+  const router = useRouter()
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
+
+  // Redireccionar si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/dashboard")
+    }
+  }, [isAuthenticated, router])
+
+  // No mostrar nada mientras se redirige
+  if (isAuthenticated) {
+    return null
+  }
+
   return (
     <div
       className="min-h-svh relative overflow-hidden"

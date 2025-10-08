@@ -7,6 +7,7 @@ export interface Usuario {
   telefono?: string;
   direccion?: string;
   is_staff: boolean;
+  is_superuser: boolean;
   is_active: boolean;
   roles: UsuarioRol[];
 }

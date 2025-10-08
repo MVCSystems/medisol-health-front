@@ -6,7 +6,7 @@ class AuthApiService {
    * Realizar login con DNI y contraseña
    */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await api.post<LoginResponse>('/api/login/', credentials)
+    const response = await api.post<LoginResponse>('/api/usuarios/login/', credentials)
     return response.data
   }
 
@@ -45,7 +45,7 @@ class AuthApiService {
    */
   async logout(refreshToken: string): Promise<void> {
     try {
-      await api.post('/api/logout/', { refresh: refreshToken })
+      await api.post('/api/usuarios/logout/', { refresh: refreshToken })
     } catch {
       // El logout puede fallar si el backend no lo implementa
       // pero aún así limpiamos los tokens localmente

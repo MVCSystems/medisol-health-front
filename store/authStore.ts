@@ -17,6 +17,7 @@ interface User {
   direccion?: string
   roles: UserRole[]
   is_staff: boolean
+  is_superuser: boolean
 }
 
 interface AuthTokens {
@@ -49,6 +50,7 @@ interface AuthState {
   isAdmin: () => boolean
   isDoctor: () => boolean
   isPaciente: () => boolean
+  isRecepcionista: () => boolean
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -95,17 +97,23 @@ export const useAuthStore = create<AuthState>()(
 
       isAdmin: () => {
         const { user } = get()
-        return user?.is_staff || false
+        // El superusuario siempre es admin, o si tiene el rol de Administrador
+        return user?.is_superuser || user?.is_staff || user?.roles?.[0]?.rol === 'Administrador'
       },
 
       isDoctor: () => {
         const { user } = get()
-        return user?.roles?.some(role => role.rol === 'DOCTOR') || false
+        return user?.roles?.some(role => role.rol === 'Doctor') || false
       },
 
       isPaciente: () => {
         const { user } = get()
-        return user?.roles?.some(role => role.rol === 'PACIENTE') || false
+        return user?.roles?.some(role => role.rol === 'Paciente') || false
+      },
+
+      isRecepcionista: () => {
+        const { user } = get()
+        return user?.roles?.some(role => role.rol === 'Recepcionista') || false
       },
     }),
     {

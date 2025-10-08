@@ -1,149 +1,333 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
-import {
-    SidebarInset,
-    SidebarProvider,
-} from "@/components/ui/sidebar"
+import React, { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+// Sidebar components será usado cuando implementemos la navegación lateral
 import { api } from "@/lib/axios"
 import { useAuthStore } from "@/store/authStore"
-import { jwtDecode } from "jwt-decode"
-import type { Usuario } from "@/types/usuarios.d"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { 
+    Users, 
+    UserPlus, 
+    Calendar, 
+    Clock, 
+    Heart, 
+    Building2,
+    TrendingUp,
+    AlertCircle,
+    CheckCircle2,
+    type LucideIcon
+} from "lucide-react"
+// Badge component para usar en futuras funcionalidades
+
+// Interfaces para los datos del dashboard
+interface DashboardStats {
+    clinicas: number
+    doctores: number
+    pacientes: number
+    citas_hoy: number
+    citas_pendientes: number
+    citas_completadas: number
+    especialidades: number
+}
+
+interface Cita {
+    id: number
+    estado: 'PENDIENTE' | 'COMPLETADA' | 'CANCELADA'
+    fecha_hora: string
+    fecha: string
+    // Agregar otros campos según tu modelo
+}
+
+interface StatCardProps {
+    title: string
+    value: string | number
+    description: string
+    icon: LucideIcon
+    variant?: "default" | "success" | "warning" | "destructive"
+}
 
 export default function DashboardContent() {
-    const searchParams = useSearchParams()
     const router = useRouter()
-    // const { setTokens, setUser } = useAuthStore()
+    const { user, isAdmin, isDoctor, isPaciente } = useAuthStore()
+    
+    const [stats, setStats] = useState<DashboardStats>({
+        clinicas: 0,
+        doctores: 0,
+        pacientes: 0,
+        citas_hoy: 0,
+        citas_pendientes: 0,
+        citas_completadas: 0,
+        especialidades: 0
+    })
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
 
-    const [areaCount, setAreaCount] = useState(0)
-    const [areaDetail, setAreaDetail] = useState("")
-    const [areaInactive, setAreaInactive] = useState(0)
-    const [userCount, setUserCount] = useState(0)
-    const [userDetail, setUserDetail] = useState("")
-    const [userInactive, setUserInactive] = useState(0)
-    const [ticketCount, setTicketCount] = useState(0)
-    const [ticketDetail, setTicketDetail] = useState("")
-    const [ticketResolved, setTicketResolved] = useState(0)
-
-    // Manejar tokens de Google OAuth
+    // Cargar estadísticas del dashboard médico
     useEffect(() => {
-        const accessToken = searchParams.get('accessToken')
-        const refreshToken = searchParams.get('refreshToken')
-
-        console.log('Dashboard - Params recibidos:', { accessToken: !!accessToken, refreshToken: !!refreshToken })
-
-        if (accessToken && refreshToken) {
-            console.log('Dashboard - Procesando tokens de Google OAuth')
-
-            // Guardar tokens en el store
-            setTokens(accessToken, refreshToken)
-
-            // Decodificar el JWT para obtener info del usuario
+        const loadDashboardStats = async () => {
+            setLoading(true)
+            setError(null)
+            
             try {
-                const decoded: JwtPayload = jwtDecode(accessToken)
-                console.log('Dashboard - JWT decodificado:', decoded)
+                // Obtener estadísticas según el rol del usuario
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const requests: Promise<any>[] = []
+                
+                if (isAdmin()) {
+                    // Administradores ven todo
+                    requests.push(
+                        api.get("/api/clinicas/"),
+                        api.get("/api/clinicas/doctores/"),
+                        api.get("/api/clinicas/pacientes/"),
+                        api.get("/api/clinicas/citas/"),
+                        api.get("/api/clinicas/especialidades/")
+                    )
+                } else if (isDoctor()) {
+                    // Doctores ven sus propias estadísticas
+                    requests.push(
+                        api.get("/api/clinicas/citas/mis_citas/"),
+                        api.get("/api/clinicas/pacientes/")
+                    )
+                } else if (isPaciente()) {
+                    // Pacientes ven solo sus citas
+                    requests.push(
+                        api.get("/api/clinicas/citas/mis_citas/")
+                    )
+                }
 
-                setUser({
-                    id: parseInt(decoded.sub),
-                    dni: "",
-                    firstName: "",
-                    lastName: "",
-                    email: decoded.email || "",
-                    role: EmployeeRole.STAFF,
-                    systemRole: (decoded.roles?.[0] as SystemRole) || SystemRole.USER,
-                    isActive: true,
-                    hasSystemAccess: true,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                })
+                const responses = await Promise.allSettled(requests)
+                
+                // Procesar respuestas según el rol
+                if (isAdmin()) {
+                    const [clinicasRes, doctoresRes, pacientesRes, citasRes, especialidadesRes] = responses
+                    
+                    setStats({
+                        clinicas: clinicasRes.status === 'fulfilled' ? clinicasRes.value.data.count || clinicasRes.value.data.length || 0 : 0,
+                        doctores: doctoresRes.status === 'fulfilled' ? doctoresRes.value.data.count || doctoresRes.value.data.length || 0 : 0,
+                        pacientes: pacientesRes.status === 'fulfilled' ? pacientesRes.value.data.count || pacientesRes.value.data.length || 0 : 0,
+                        citas_hoy: 0, // Se calculará después
+                        citas_pendientes: citasRes.status === 'fulfilled' ? 
+                            citasRes.value.data.results?.filter((cita: Cita) => cita.estado === 'PENDIENTE').length || 0 : 0,
+                        citas_completadas: citasRes.status === 'fulfilled' ? 
+                            citasRes.value.data.results?.filter((cita: Cita) => cita.estado === 'COMPLETADA').length || 0 : 0,
+                        especialidades: especialidadesRes.status === 'fulfilled' ? especialidadesRes.value.data.count || especialidadesRes.value.data.length || 0 : 0
+                    })
+                } else {
+                    // Para doctores y pacientes, solo mostrar sus propias estadísticas
+                    const citasRes = responses[0]
+                    if (citasRes.status === 'fulfilled') {
+                        const citas = citasRes.value.data.results || citasRes.value.data || []
+                        setStats(prev => ({
+                            ...prev,
+                            citas_pendientes: citas.filter((cita: Cita) => cita.estado === 'PENDIENTE').length,
+                            citas_completadas: citas.filter((cita: Cita) => cita.estado === 'COMPLETADA').length,
+                            citas_hoy: citas.filter((cita: Cita) => {
+                                const hoy = new Date().toISOString().split('T')[0]
+                                return cita.fecha === hoy
+                            }).length
+                        }))
+                    }
+                }
 
-                console.log('Dashboard - Usuario guardado en el store')
             } catch (error) {
-                console.error('Error decodificando JWT:', error)
+                console.error('Error cargando estadísticas:', error)
+                setError('Error al cargar las estadísticas del dashboard')
+            } finally {
+                setLoading(false)
             }
-
-            // Limpiar la URL removiendo los parámetros
-            router.replace('/dashboard')
         }
-    }, [searchParams, setTokens, setUser, router])
 
-    useEffect(() => {
-        // Dar tiempo para que los tokens se procesen antes de hacer las llamadas
-        const timer = setTimeout(() => {
-            Promise.all([
-                api.get("/area"),
-                api.get("/area?status=ACTIVA&limit=1"),
-                api.get("/area?status=INACTIVA&limit=1"),
-            ]).then(([allRes, activeRes, inactiveRes]) => {
-                setAreaCount(allRes.data.count)
-                setAreaDetail(`Áreas activas: ${activeRes.data.count}`)
-                setAreaInactive(inactiveRes.data.count)
-            }).catch(() => {
-                setAreaCount(0)
-                setAreaDetail("No disponible")
-                setAreaInactive(0)
-            })
+        loadDashboardStats()
+    }, [isAdmin, isDoctor, isPaciente])
 
-            Promise.all([
-                api.get("/user"),
-                api.get("/user?status=ACTIVO&limit=1"),
-                api.get("/user?status=INACTIVO&limit=1"),
-            ]).then(([allRes, activeRes, inactiveRes]) => {
-                setUserCount(allRes.data.count)
-                setUserDetail(`Usuarios activos: ${activeRes.data.count}`)
-                setUserInactive(inactiveRes.data.count)
-            }).catch(() => {
-                setUserCount(0)
-                setUserDetail("No disponible")
-                setUserInactive(0)
-            })
+    // Componente para mostrar estadísticas
+    const StatCard = ({ title, value, description, icon: Icon }: StatCardProps) => (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-xs text-muted-foreground">{description}</p>
+            </CardContent>
+        </Card>
+    )
 
-            Promise.all([
-                api.get("/tickets"),
-                api.get("/tickets?status=PENDIENTE&limit=1"),
-                api.get("/tickets?status=RESUELTO&limit=1"),
-            ]).then(([allRes, pendingRes, resolvedRes]) => {
-                setTicketCount(allRes.data.count)
-                setTicketDetail(`Tickets pendientes: ${pendingRes.data.count}`)
-                setTicketResolved(resolvedRes.data.count)
-            }).catch(() => {
-                setTicketCount(0)
-                setTicketDetail("No disponible")
-                setTicketResolved(0)
-            })
-        }, 500) // Esperar 500ms para que se procesen los tokens
-
-        return () => clearTimeout(timer)
-    }, [searchParams]) // Depender de searchParams para que se ejecute cuando cambien
-
-    return (
-        <SidebarProvider
-            style={{
-                "--sidebar-width": "calc(var(--spacing) * 72)",
-                "--header-height": "calc(var(--spacing) * 12)",
-            } as React.CSSProperties}
-        >
-            <SidebarInset>
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                            <SectionCards
-                                areaCount={areaCount}
-                                areaDetail={areaDetail}
-                                areaInactive={areaInactive}
-                                userCount={userCount}
-                                userDetail={userDetail}
-                                userInactive={userInactive}
-                                ticketCount={ticketCount}
-                                ticketDetail={ticketDetail}
-                                ticketResolved={ticketResolved}
-                            />
-                            <DataTable data={data} />
+    if (loading) {
+        return (
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="text-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                            <p className="mt-2 text-muted-foreground">Cargando dashboard...</p>
                         </div>
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                        <div className="text-center py-8">
+                            <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+                            <p className="text-destructive">{error}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+                    {/* Header del Dashboard */}
+                    <div className="flex flex-col gap-2">
+                        <h1 className="text-3xl font-bold tracking-tight">
+                            Dashboard {user?.roles?.[0]?.rol || 'MEDISOL'}
+                        </h1>
+                        <p className="text-muted-foreground">
+                            Bienvenido/a {user?.first_name} {user?.last_name}
+                            {user?.roles?.[0]?.clinica && ` - ${user.roles[0].clinica}`}
+                        </p>
+                    </div>
+
+                    {/* Estadísticas principales */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        {isAdmin() && (
+                            <>
+                                <StatCard
+                                    title="Clínicas"
+                                    value={stats.clinicas}
+                                    description="Total de clínicas registradas"
+                                    icon={Building2}
+                                />
+                                <StatCard
+                                    title="Doctores"
+                                    value={stats.doctores}
+                                    description="Médicos en el sistema"
+                                    icon={Users}
+                                />
+                                <StatCard
+                                    title="Pacientes"
+                                    value={stats.pacientes}
+                                    description="Pacientes registrados"
+                                    icon={UserPlus}
+                                />
+                                <StatCard
+                                    title="Especialidades"
+                                    value={stats.especialidades}
+                                    description="Especialidades médicas"
+                                    icon={Heart}
+                                />
+                            </>
+                        )}
+                        
+                        {/* Estadísticas de citas (para todos los roles) */}
+                        <StatCard
+                            title="Citas Hoy"
+                            value={stats.citas_hoy}
+                            description="Citas programadas para hoy"
+                            icon={Calendar}
+                        />
+                        <StatCard
+                            title="Citas Pendientes"
+                            value={stats.citas_pendientes}
+                            description="Esperando confirmación"
+                            icon={Clock}
+                            variant="warning"
+                        />
+                        <StatCard
+                            title="Citas Completadas"
+                            value={stats.citas_completadas}
+                            description="Atenciones finalizadas"
+                            icon={CheckCircle2}
+                            variant="success"
+                        />
+                        <StatCard
+                            title="Actividad"
+                            value={`${((stats.citas_completadas / (stats.citas_completadas + stats.citas_pendientes)) * 100 || 0).toFixed(1)}%`}
+                            description="Tasa de completación"
+                            icon={TrendingUp}
+                        />
+                    </div>
+
+                    {/* Acciones rápidas según el rol */}
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {isAdmin() && (
+                            <>
+                                <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/clinicas')}>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Building2 className="h-5 w-5" />
+                                            Gestionar Clínicas
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Administrar clínicas del sistema
+                                        </CardDescription>
+                                    </CardHeader>
+                                </Card>
+                                <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/doctores')}>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <Users className="h-5 w-5" />
+                                            Gestionar Doctores
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Administrar médicos y especialidades
+                                        </CardDescription>
+                                    </CardHeader>
+                                </Card>
+                                <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/pacientes')}>
+                                    <CardHeader>
+                                        <CardTitle className="flex items-center gap-2">
+                                            <UserPlus className="h-5 w-5" />
+                                            Gestionar Pacientes
+                                        </CardTitle>
+                                        <CardDescription>
+                                            Administrar pacientes registrados
+                                        </CardDescription>
+                                    </CardHeader>
+                                </Card>
+                            </>
+                        )}
+                        
+                        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/citas')}>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Calendar className="h-5 w-5" />
+                                    {isPaciente() ? 'Mis Citas' : 'Gestionar Citas'}
+                                </CardTitle>
+                                <CardDescription>
+                                    {isPaciente() ? 'Ver y agendar citas médicas' : 'Administrar citas médicas'}
+                                </CardDescription>
+                            </CardHeader>
+                        </Card>
+                        
+                        {(isAdmin() || isDoctor()) && (
+                            <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => router.push('/dashboard/horarios')}>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Clock className="h-5 w-5" />
+                                        Horarios
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Gestionar horarios de atención
+                                    </CardDescription>
+                                </CardHeader>
+                            </Card>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
     )
 }

@@ -5,16 +5,27 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Eye, EyeOff, HelpCircle, X, User } from "lucide-react"
+import { Eye, EyeOff, HelpCircle, X, User, Loader2 } from "lucide-react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useAuthStore } from "@/store/authStore"
+import { authApiService } from "@/services/auth-api.service"
 import RegisterForm from "@/components/auth/RegisterForm"
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"form">) {
   const [showPassword, setShowPassword] = useState(false)
   const [showAccessibilityHelp, setShowAccessibilityHelp] = useState(false)
   const [showRegister, setShowRegister] = useState(false)
-  const [showRepeatPassword, setShowRepeatPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [formData, setFormData] = useState({
+    dni: '',
+    password: ''
+  })
+
+  const router = useRouter()
+  const login = useAuthStore(state => state.login)
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -25,9 +36,76 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.dni || !formData.password) {
+      toast.error("Por favor complete todos los campos")
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      const loginData = await authApiService.login({
+        dni: formData.dni,
+        password: formData.password
+      })
+
+      // Guardar datos en el store
+      login(loginData)
+
+      // Mostrar toast de éxito
+      toast.success("¡Bienvenido a MEDISOL!")
+      
+      // Guardar flag para mostrar toast en dashboard
+      localStorage.setItem("showLoginToast", "true")
+
+      // Redirigir al dashboard
+      router.push("/dashboard")
+
+    } catch (error: unknown) {
+      console.error("Error de login:", error)
+      
+      // Manejar diferentes tipos de errores
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number; data?: { detail?: string; error?: string; message?: string } } }
+        
+        if (axiosError.response?.status === 404) {
+          toast.error("No se encontró un usuario con ese DNI")
+        } else if (axiosError.response?.status === 401) {
+          toast.error("DNI o contraseña incorrectos")
+        } else if (axiosError.response?.status === 500) {
+          toast.error("Error interno del servidor. Por favor, contacte al administrador.")
+          console.error("Error 500 details:", axiosError.response?.data)
+        } else if (axiosError.response?.data?.detail) {
+          toast.error(axiosError.response.data.detail)
+        } else if (axiosError.response?.data?.error) {
+          toast.error(axiosError.response.data.error)
+        } else if (axiosError.response?.data?.message) {
+          toast.error(axiosError.response.data.message)
+        } else {
+          toast.error("Error al iniciar sesión. Intente nuevamente.")
+        }
+      } else {
+        toast.error("Error al iniciar sesión. Intente nuevamente.")
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <>
-      <form className={cn("space-y-4 sm:space-y-6", className)} {...props}>
+      <form className={cn("space-y-4 sm:space-y-6", className)} onSubmit={handleSubmit} {...props}>
         {/* Título principal y móvil */}
         <div className="text-center mb-4 sm:mb-6">
           <h2 
@@ -47,17 +125,21 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         <div className="space-y-4 sm:space-y-5">
           <div className="space-y-2">
             <Label 
-              htmlFor="email" 
+              htmlFor="dni" 
               className="text-sm font-semibold"
               style={{ color: "var(--foreground)" }}
             >
-              Usuario o Email
+              DNI
             </Label>
             <Input 
-              id="email" 
-              type="email" 
-              placeholder="doctor@medisol.pe" 
+              id="dni" 
+              name="dni"
+              type="text" 
+              placeholder="12345678" 
+              value={formData.dni}
+              onChange={handleInputChange}
               required 
+              maxLength={8}
               className="h-10 sm:h-12 text-sm sm:text-base rounded-lg shadow-sm transition-all duration-200"
               style={{
                 borderColor: "var(--border)",
@@ -86,7 +168,10 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
             <div className="relative">
               <Input 
                 id="password" 
+                name="password"
                 type={showPassword ? "text" : "password"} 
+                value={formData.password}
+                onChange={handleInputChange}
                 required 
                 className="h-10 sm:h-12 text-sm sm:text-base rounded-lg shadow-sm pr-10 sm:pr-12 transition-all duration-200"
                 style={{
@@ -109,13 +194,21 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         {/* Botón principal */}
         <Button 
           type="submit" 
-          className="w-full h-10 sm:h-12 font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-lg rounded-lg"
+          disabled={isLoading}
+          className="w-full h-10 sm:h-12 font-semibold text-sm sm:text-base transition-all duration-200 shadow-md hover:shadow-lg rounded-lg disabled:opacity-50"
           style={{
             backgroundColor: "var(--primary)",
             color: "var(--primary-foreground)"
           }}
         >
-          Iniciar Sesión
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Iniciando sesión...
+            </>
+          ) : (
+            "Iniciar Sesión"
+          )}
         </Button>
         {/* Divider */}
         <div className="relative my-4 sm:my-6">
