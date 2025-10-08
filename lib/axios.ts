@@ -16,7 +16,7 @@ const api = axios.create({
 // Utilidad para verificar si un token JWT está expirado
 const isTokenExpired = (token: string): boolean => {
   try {
-    const decoded: any = jwtDecode(token);
+    const decoded = jwtDecode<{ exp?: number }>(token);
     const currentTime = Math.floor(Date.now() / 1000);
     return decoded.exp ? decoded.exp < currentTime : true;
   } catch {
@@ -26,8 +26,8 @@ const isTokenExpired = (token: string): boolean => {
 
 // Función para manejar el cierre de sesión
 const handleLogout = () => {
-  useAuthStore.getState().clearTokens();
-  redirect("/iniciar-sesion");
+  useAuthStore.getState().logout();
+  redirect("/auth/login");
 };
 
 // Configuración de interceptores para API REST
@@ -41,11 +41,11 @@ api.interceptors.request.use(
     // Si el token está expirado, intentamos refrescarlo
     if (isTokenExpired(tokens.access) && tokens.refresh) {
       try {
-        const { data } = await axios.post(`${siteConfig.backend_url}/token/refresh/`, {
+        const refreshResponse = await axios.post(`${siteConfig.backend_url}/api/token/refresh/`, {
           refresh: tokens.refresh,
         });
-        setTokens(data.access, tokens.refresh);
-        config.headers.Authorization = `Bearer ${data.access}`;
+        setTokens(refreshResponse.data.access, tokens.refresh);
+        config.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
       } catch (error) {
         handleLogout();
         return Promise.reject(error);

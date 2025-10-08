@@ -10,7 +10,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const user = useAuthStore(state => state.user)
+  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const [hydrated, setHydrated] = useState(false)
 
   // Espera a que zustand hidrate el estado
@@ -20,10 +20,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Redirige si no hay usuario autenticado (solo después de hidratar)
   useEffect(() => {
-    if (hydrated && !user) {
+    if (hydrated && !isAuthenticated) {
       router.replace("/auth/login")
     }
-  }, [hydrated, user, router])
+  }, [hydrated, isAuthenticated, router])
 
   // Muestra toast de login solo una vez
   useEffect(() => {
