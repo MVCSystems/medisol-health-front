@@ -168,10 +168,7 @@ export default function UsuarioForm({
       };
     }
 
-    const result = await onSubmit(submitData);
-    if (result) {
-      onClose();
-    }
+    await onSubmit(submitData);
   };
 
   return (

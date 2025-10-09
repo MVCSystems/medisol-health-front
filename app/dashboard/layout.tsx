@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuthStore } from "@/store/authStore"
 import { toast } from "sonner"
+import { Toaster } from "@/components/ui/sonner"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -52,6 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </main>
       </SidebarInset>
+      <Toaster />
     </SidebarProvider>
   )
 }
