@@ -56,9 +56,23 @@ export function useUsuarios() {
     } catch (error: unknown) {
       const apiError = error as ApiError;
       
-      // Error 500 = problema del servidor
+      // Si es error 500, verificar si el usuario se creó de todas formas
       if (apiError?.response?.status === 500) {
-        toast.error('Error interno del servidor. Contacte al administrador.');
+        // Actualizar cache para verificar si el usuario se creó
+        await mutateUsuarios();
+        
+        // Buscar si el usuario existe ahora (por DNI o email)
+        const updatedResponse = await usuarioService.getAll();
+        const usuarioCreado = updatedResponse.results.find(u => 
+          u.dni === data.dni || u.email === data.email
+        );
+        
+        if (usuarioCreado) {
+          toast.success('Usuario creado exitosamente');
+          return usuarioCreado;
+        } else {
+          toast.error('Error interno del servidor. El usuario no se pudo crear.');
+        }
       } else {
         // Otros errores
         let message = 'Error al crear usuario';
