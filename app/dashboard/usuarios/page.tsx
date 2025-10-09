@@ -115,9 +115,8 @@ export default function UsuariosPage() {
 
   const handleCreateSubmit = async (data: CreateUsuarioData | UpdateUsuarioData) => {
     const result = await createUsuario(data as CreateUsuarioData);
-    if (result) {
-      setShowCreateForm(false);
-    }
+    // SIEMPRE cerrar el formulario después del intento (éxito o error)
+    setShowCreateForm(false);
     return result;
   };
 

@@ -8,8 +8,14 @@ interface ApiError {
   response?: {
     data?: {
       detail?: string;
+      message?: string;
+      error?: string;
+      non_field_errors?: string[];
+      [key: string]: unknown;
     };
+    status?: number;
   };
+  message?: string;
 }
 
 const USUARIOS_KEY = '/api/usuarios/usuarios/';
@@ -49,8 +55,19 @@ export function useUsuarios() {
       return newUsuario;
     } catch (error: unknown) {
       const apiError = error as ApiError;
-      const message = apiError?.response?.data?.detail || 'Error al crear usuario';
-      toast.error(message);
+      
+      // Error 500 = problema del servidor
+      if (apiError?.response?.status === 500) {
+        toast.error('Error interno del servidor. Contacte al administrador.');
+      } else {
+        // Otros errores
+        let message = 'Error al crear usuario';
+        if (apiError?.response?.data) {
+          const errorData = apiError.response.data;
+          message = errorData.detail || errorData.message || message;
+        }
+        toast.error(message);
+      }
       return null;
     } finally {
       setIsCreating(false);
