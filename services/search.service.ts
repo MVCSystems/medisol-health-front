@@ -6,7 +6,6 @@ import type {
   Cita,
   PaginatedResponse 
 } from '@/types/clinicas';
-import type { Usuario } from '@/types/usuario';
 
 // Interfaces para los resultados de búsqueda
 export interface SearchResults {
@@ -14,7 +13,6 @@ export interface SearchResults {
   doctores: Doctor[];
   clinicas: Clinica[];
   citas: Cita[];
-  usuarios: Usuario[];
 }
 
 class SearchService {
@@ -23,7 +21,6 @@ class SearchService {
     doctores: '/api/clinicas/doctores',
     clinicas: '/api/clinicas/clinicas',
     citas: '/api/clinicas/citas',
-    usuarios: '/api/usuarios/usuarios',
   };
 
   /**
@@ -36,7 +33,6 @@ class SearchService {
         doctores: [],
         clinicas: [],
         citas: [],
-        usuarios: [],
       };
     }
 
@@ -46,13 +42,11 @@ class SearchService {
         doctoresRes,
         clinicasRes,
         citasRes,
-        usuariosRes,
       ] = await Promise.allSettled([
         this.searchEspecialidades(query),
         this.searchDoctores(query),
         this.searchClinicas(query),
         this.searchCitas(query),
-        this.searchUsuarios(query),
       ]);
 
       return {
@@ -60,7 +54,6 @@ class SearchService {
         doctores: doctoresRes.status === 'fulfilled' ? doctoresRes.value : [],
         clinicas: clinicasRes.status === 'fulfilled' ? clinicasRes.value : [],
         citas: citasRes.status === 'fulfilled' ? citasRes.value : [],
-        usuarios: usuariosRes.status === 'fulfilled' ? usuariosRes.value : [],
       };
     } catch (error) {
       console.error('Error en búsqueda universal:', error);
@@ -69,7 +62,6 @@ class SearchService {
         doctores: [],
         clinicas: [],
         citas: [],
-        usuarios: [],
       };
     }
   }
@@ -130,21 +122,6 @@ class SearchService {
       return response.data.results || [];
     } catch (error) {
       console.error('Error buscando citas:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Buscar usuarios por nombre, apellido o email
-   */
-  async searchUsuarios(query: string): Promise<Usuario[]> {
-    try {
-      const response = await api.get<PaginatedResponse<Usuario>>(
-        `${this.baseUrls.usuarios}/?search=${encodeURIComponent(query)}`
-      );
-      return response.data.results || [];
-    } catch (error) {
-      console.error('Error buscando usuarios:', error);
       return [];
     }
   }

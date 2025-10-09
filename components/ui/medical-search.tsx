@@ -15,14 +15,12 @@ import {
   Clock,
   User,
   Phone,
-  Building2,
-  UserCheck
+  Building2
 } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { searchService, type SearchResults } from "@/services/search.service";
 import type { Especialidad, Doctor, Clinica, Cita } from "@/types/clinicas";
-import type { Usuario } from "@/types/usuario";
 
 
 
@@ -34,7 +32,6 @@ export default function MedicalSearch() {
     doctores: [],
     clinicas: [],
     citas: [],
-    usuarios: [],
   });
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +39,7 @@ export default function MedicalSearch() {
   // Función para buscar en el backend
   const performSearch = useCallback(async (term: string) => {
     if (term.length < 2) {
-      setResults({ especialidades: [], doctores: [], clinicas: [], citas: [], usuarios: [] });
+      setResults({ especialidades: [], doctores: [], clinicas: [], citas: [] });
       return false;
     }
 
@@ -53,7 +50,7 @@ export default function MedicalSearch() {
       setResults(searchResults);
     } catch (error) {
       console.error('Error en búsqueda:', error);
-      setResults({ especialidades: [], doctores: [], clinicas: [], citas: [], usuarios: [] });
+      setResults({ especialidades: [], doctores: [], clinicas: [], citas: [] });
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +86,7 @@ export default function MedicalSearch() {
     results.especialidades.length > 0 ||
     results.doctores.length > 0 ||
     results.clinicas.length > 0 ||
-    results.citas.length > 0 ||
-    results.usuarios.length > 0;
+    results.citas.length > 0;
 
   // Manejar navegación a diferentes secciones
   const handleEspecialidadClick = (especialidad: Especialidad) => {
@@ -117,11 +113,7 @@ export default function MedicalSearch() {
     window.location.href = `/dashboard/citas/${cita.id}`;
   };
 
-  const handleUsuarioClick = (usuario: Usuario) => {
-    setIsOpen(false);
-    // Navegar a perfil del usuario
-    window.location.href = `/dashboard/usuarios/${usuario.id}`;
-  };
+
 
   // Mantener focus cuando se abre el popover
   useEffect(() => {
@@ -425,66 +417,7 @@ export default function MedicalSearch() {
               </div>
             )}
 
-            {/* Usuarios */}
-            {results.usuarios.length > 0 && (
-              <div className="p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                    <UserCheck className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">Usuarios</h3>
-                    <p className="text-sm text-gray-600">Usuarios registrados en el sistema</p>
-                  </div>
-                  <div className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold">
-                    {results.usuarios.length} usuarios
-                  </div>
-                </div>
-                <div className="grid gap-4">
-                  {results.usuarios.map((item) => (
-                    <div
-                      key={item.id}
-                      onClick={() => handleUsuarioClick(item)}
-                      className="medical-card group relative p-5 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 hover:from-indigo-100/90 hover:to-purple-100/90 rounded-2xl cursor-pointer transition-all duration-500 hover:shadow-xl hover:scale-[1.02] border border-indigo-100/50 hover:border-indigo-200"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4 flex-1">
-                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                            {item.first_name?.[0]}{item.last_name?.[0]}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="text-lg font-bold text-gray-800 group-hover:text-indigo-700 transition-colors mb-1">
-                              {item.first_name} {item.last_name}
-                            </h4>
-                            <p className="text-gray-600 text-sm mb-2">{item.email}</p>
-                            <div className="flex flex-wrap gap-1">
-                              {item.roles?.map((role) => (
-                                <span key={role.id} className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
-                                  {role.rol_nombre}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          {item.is_active ? (
-                            <div className="flex items-center gap-2 status-available px-2 py-1 rounded-full">
-                              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                              <span className="text-xs font-bold">Activo</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 status-unavailable px-2 py-1 rounded-full">
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
-                              <span className="text-xs font-bold">Inactivo</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
         ) : searchTerm.length >= 2 ? (
           <div className="p-10 text-center">
@@ -529,16 +462,9 @@ export default function MedicalSearch() {
                 <p className="text-base font-bold text-orange-700 mb-1">Citas</p>
                 <p className="text-sm text-orange-600">Gestión de citas médicas</p>
               </div>
-              <div className="group p-6 bg-gradient-to-br from-indigo-50 via-purple-100 to-indigo-100 hover:from-indigo-100 hover:via-purple-200 hover:to-indigo-200 rounded-2xl transition-all duration-500 cursor-pointer hover:shadow-xl hover:scale-105">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                  <UserCheck className="h-8 w-8 text-white" />
-                </div>
-                <p className="text-base font-bold text-indigo-700 mb-1">Usuarios</p>
-                <p className="text-sm text-indigo-600">Usuarios del sistema</p>
-              </div>
             </div>
             <p className="text-gray-500 text-base">
-              Comienza escribiendo para buscar especialidades, doctores, clínicas, citas o usuarios
+              Comienza escribiendo para buscar especialidades, doctores, clínicas o citas
             </p>
           </div>
         )}
