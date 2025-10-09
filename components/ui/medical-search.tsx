@@ -14,142 +14,49 @@ import {
   MapPin, 
   Clock,
   User,
-  FileText,
   Phone,
-  AlertCircle
+  Building2,
+  UserCheck
 } from "lucide-react";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-// import useSWR from "swr";
-// import { fetcher } from "@/lib/axios";
+import { searchService, type SearchResults } from "@/services/search.service";
+import type { Especialidad, Doctor, Clinica, Cita } from "@/types/clinicas";
+import type { Usuario } from "@/types/usuario";
 
-// Datos médicos de ejemplo (reemplazar con APIs del backend)
-const mockMedicalData = {
-  especialidades: [
-    { id: 1, nombre: "Cardiología", descripcion: "Enfermedades del corazón", disponible: true },
-    { id: 2, nombre: "Pediatría", descripcion: "Medicina infantil", disponible: true },
-    { id: 3, nombre: "Dermatología", descripcion: "Enfermedades de la piel", disponible: true },
-    { id: 4, nombre: "Neurología", descripcion: "Sistema nervioso", disponible: false },
-    { id: 5, nombre: "Ginecología", descripcion: "Salud femenina", disponible: true },
-    { id: 6, nombre: "Traumatología", descripcion: "Huesos y articulaciones", disponible: true },
-  ],
-  medicos: [
-    { id: 1, nombre: "Dr. Juan Pérez", especialidad: "Cardiología", disponible: true, horario: "Lunes a Viernes 8:00-16:00" },
-    { id: 2, nombre: "Dra. María González", especialidad: "Pediatría", disponible: true, horario: "Martes a Sábado 9:00-17:00" },
-    { id: 3, nombre: "Dr. Carlos Ruiz", especialidad: "Dermatología", disponible: false, horario: "Lunes a Miércoles 10:00-14:00" },
-    { id: 4, nombre: "Dra. Ana Torres", especialidad: "Ginecología", disponible: true, horario: "Lunes a Viernes 14:00-20:00" },
-  ],
-  servicios: [
-    { id: 1, nombre: "Exámenes de Laboratorio", categoria: "Diagnóstico", precio: "S/. 50-200", disponible: true },
-    { id: 2, nombre: "Radiografías", categoria: "Imagenología", precio: "S/. 80-150", disponible: true },
-    { id: 3, nombre: "Ecografías", categoria: "Imagenología", precio: "S/. 120-250", disponible: true },
-    { id: 4, nombre: "Electrocardiograma", categoria: "Cardiología", precio: "S/. 60", disponible: true },
-    { id: 5, nombre: "Consulta de Emergencia", categoria: "Urgencias", precio: "S/. 100", disponible: true },
-  ],
-  informacion: [
-    { id: 1, titulo: "Preparación para exámenes de sangre", categoria: "Guía", contenido: "Ayuno de 8-12 horas" },
-    { id: 2, titulo: "Síntomas de infarto", categoria: "Emergencia", contenido: "Dolor en el pecho, dificultad para respirar" },
-    { id: 3, titulo: "Vacunas requeridas", categoria: "Prevención", contenido: "Calendario de vacunación infantil" },
-    { id: 4, titulo: "Cuidados post-operatorios", categoria: "Recuperación", contenido: "Instrucciones después de cirugía" },
-  ]
-};
 
-// Interfaces para tipado
-interface Especialidad {
-  id: number;
-  nombre: string;
-  descripcion: string;
-  disponible: boolean;
-}
-
-interface Medico {
-  id: number;
-  nombre: string;
-  especialidad: string;
-  disponible: boolean;
-  horario: string;
-}
-
-interface Servicio {
-  id: number;
-  nombre: string;
-  categoria: string;
-  precio: string;
-  disponible: boolean;
-}
-
-interface Informacion {
-  id: number;
-  titulo: string;
-  categoria: string;
-  contenido: string;
-}
-
-interface SearchResults {
-  especialidades: Especialidad[];
-  medicos: Medico[];
-  servicios: Servicio[];
-  informacion: Informacion[];
-}
 
 export default function MedicalSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<SearchResults>({
     especialidades: [],
-    medicos: [],
-    servicios: [],
-    informacion: [],
+    doctores: [],
+    clinicas: [],
+    citas: [],
+    usuarios: [],
   });
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Función para filtrar resultados médicos
-  const filterMedicalResults = useCallback((term: string) => {
+  // Función para buscar en el backend
+  const performSearch = useCallback(async (term: string) => {
     if (term.length < 2) {
-      setResults({ especialidades: [], medicos: [], servicios: [], informacion: [] });
+      setResults({ especialidades: [], doctores: [], clinicas: [], citas: [], usuarios: [] });
       return false;
     }
 
     setIsLoading(true);
-    const termLower = term.toLowerCase();
 
-    // Simular delay de API
-    setTimeout(() => {
-      // Filtrar especialidades
-      const filteredEspecialidades = mockMedicalData.especialidades.filter(item =>
-        item.nombre.toLowerCase().includes(termLower) ||
-        item.descripcion.toLowerCase().includes(termLower)
-      );
-
-      // Filtrar médicos
-      const filteredMedicos = mockMedicalData.medicos.filter(item =>
-        item.nombre.toLowerCase().includes(termLower) ||
-        item.especialidad.toLowerCase().includes(termLower)
-      );
-
-      // Filtrar servicios
-      const filteredServicios = mockMedicalData.servicios.filter(item =>
-        item.nombre.toLowerCase().includes(termLower) ||
-        item.categoria.toLowerCase().includes(termLower)
-      );
-
-      // Filtrar información
-      const filteredInformacion = mockMedicalData.informacion.filter(item =>
-        item.titulo.toLowerCase().includes(termLower) ||
-        item.categoria.toLowerCase().includes(termLower) ||
-        item.contenido.toLowerCase().includes(termLower)
-      );
-
-      setResults({
-        especialidades: filteredEspecialidades,
-        medicos: filteredMedicos,
-        servicios: filteredServicios,
-        informacion: filteredInformacion,
-      });
-
+    try {
+      const searchResults = await searchService.searchAll(term);
+      setResults(searchResults);
+    } catch (error) {
+      console.error('Error en búsqueda:', error);
+      setResults({ especialidades: [], doctores: [], clinicas: [], citas: [], usuarios: [] });
+    } finally {
       setIsLoading(false);
-    }, 300);
+    }
 
     return true;
   }, []);
@@ -161,7 +68,7 @@ export default function MedicalSearch() {
 
     if (value.length >= 2) {
       setIsOpen(true);
-      filterMedicalResults(value);
+      performSearch(value);
     } else {
       setIsOpen(false);
     }
@@ -180,33 +87,40 @@ export default function MedicalSearch() {
   // Verificar si hay resultados
   const hasResults = 
     results.especialidades.length > 0 ||
-    results.medicos.length > 0 ||
-    results.servicios.length > 0 ||
-    results.informacion.length > 0;
+    results.doctores.length > 0 ||
+    results.clinicas.length > 0 ||
+    results.citas.length > 0 ||
+    results.usuarios.length > 0;
 
   // Manejar navegación a diferentes secciones
   const handleEspecialidadClick = (especialidad: Especialidad) => {
     setIsOpen(false);
-    // Navegar a /especialidades/[id] o mostrar modal de citas
-    window.location.href = `/especialidades/${especialidad.id}`;
+    // Navegar a página de especialidad
+    window.location.href = `/dashboard/especialidades/${especialidad.id}`;
   };
 
-  const handleMedicoClick = (medico: Medico) => {
+  const handleDoctorClick = (doctor: Doctor) => {
     setIsOpen(false);
-    // Navegar a perfil del médico o reservar cita
-    window.location.href = `/medicos/${medico.id}`;
+    // Navegar a perfil del médico
+    window.location.href = `/dashboard/doctores/${doctor.id}`;
   };
 
-  const handleServicioClick = (servicio: Servicio) => {
+  const handleClinicaClick = (clinica: Clinica) => {
     setIsOpen(false);
-    // Navegar a información del servicio
-    window.location.href = `/servicios/${servicio.id}`;
+    // Navegar a página de clínica
+    window.location.href = `/dashboard/clinicas/${clinica.id}`;
   };
 
-  const handleInformacionClick = (info: Informacion) => {
+  const handleCitaClick = (cita: Cita) => {
     setIsOpen(false);
-    // Navegar a artículo de información
-    window.location.href = `/informacion/${info.id}`;
+    // Navegar a detalles de la cita
+    window.location.href = `/dashboard/citas/${cita.id}`;
+  };
+
+  const handleUsuarioClick = (usuario: Usuario) => {
+    setIsOpen(false);
+    // Navegar a perfil del usuario
+    window.location.href = `/dashboard/usuarios/${usuario.id}`;
   };
 
   // Mantener focus cuando se abre el popover
@@ -224,7 +138,7 @@ export default function MedicalSearch() {
         <PopoverAnchor className="flex-1">
           <Input
             ref={inputRef}
-            placeholder="Buscar médicos, especialidades, servicios..."
+            placeholder="Buscar doctores, especialidades, clínicas, citas..."
             className="rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
             value={searchTerm}
             onChange={handleInputChange}
@@ -299,20 +213,13 @@ export default function MedicalSearch() {
                               {item.nombre}
                             </h4>
                           </div>
-                          <p className="text-gray-600 text-base leading-relaxed pl-6">{item.descripcion}</p>
+                          <p className="text-gray-600 text-base leading-relaxed pl-6">{item.descripcion || 'Especialidad médica'}</p>
                         </div>
                         <div className="ml-6 flex flex-col items-end gap-3">
-                          {item.disponible ? (
-                            <div className="flex items-center gap-2 status-available px-3 py-1.5 rounded-full">
-                              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                              <span className="text-sm font-bold">Disponible</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 status-unavailable px-3 py-1.5 rounded-full">
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
-                              <span className="text-sm font-bold">No disponible</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2 status-available px-3 py-1.5 rounded-full">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                            <span className="text-sm font-bold">Disponible</span>
+                          </div>
                           <Calendar className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
                         </div>
                       </div>
@@ -322,8 +229,8 @@ export default function MedicalSearch() {
               </div>
             )}
 
-            {/* Médicos */}
-            {results.medicos.length > 0 && (
+            {/* Doctores */}
+            {results.doctores.length > 0 && (
               <div className="p-6 border-b border-gray-100/60">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 gradient-medicos rounded-2xl flex items-center justify-center shadow-lg">
@@ -334,49 +241,58 @@ export default function MedicalSearch() {
                     <p className="text-sm text-gray-600">Profesionales de la salud especializados</p>
                   </div>
                   <div className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-sm font-bold">
-                    {results.medicos.length} doctores
+                    {results.doctores.length} doctores
                   </div>
                 </div>
                 <div className="grid gap-4">
-                  {results.medicos.map((item) => (
+                  {results.doctores.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => handleMedicoClick(item)}
+                      onClick={() => handleDoctorClick(item)}
                       className="medical-card group relative p-5 bg-gradient-to-r from-emerald-50/80 to-green-50/80 hover:from-emerald-100/90 hover:to-green-100/90 rounded-2xl cursor-pointer transition-all duration-500 hover:shadow-xl hover:scale-[1.02] border border-emerald-100/50 hover:border-emerald-200"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-4 flex-1">
                           <div className="relative">
                             <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 via-green-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:shadow-xl transition-shadow">
-                              {item.nombre.split(' ').map(n => n[0]).join('')}
+                              {(item.usuario_data?.first_name || item.nombres || 'D')[0]}{(item.usuario_data?.last_name || item.apellidos || 'R')[0]}
                             </div>
-                            {item.disponible && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-                            )}
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
                           </div>
                           <div className="flex-1">
                             <h4 className="text-xl font-bold text-gray-800 group-hover:text-emerald-700 transition-colors mb-1">
-                              {item.nombre}
+                              {item.usuario_data?.first_name || item.nombres} {item.usuario_data?.last_name || item.apellidos}
                             </h4>
-                            <p className="text-emerald-600 font-semibold text-base mb-3">{item.especialidad}</p>
+                            <p className="text-emerald-600 font-semibold text-base mb-3">{item.titulo}</p>
                             <div className="flex items-center gap-2 text-gray-500">
-                              <Clock className="h-4 w-4" />
-                              <p className="text-sm font-medium">{item.horario}</p>
+                              <MapPin className="h-4 w-4" />
+                              <p className="text-sm font-medium">{item.clinica_nombre}</p>
                             </div>
+                            {item.especialidades_data && item.especialidades_data.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {item.especialidades_data.slice(0, 2).map((esp) => (
+                                  <span key={esp.id} className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
+                                    {esp.nombre}
+                                  </span>
+                                ))}
+                                {item.especialidades_data.length > 2 && (
+                                  <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                                    +{item.especialidades_data.length - 2} más
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-3">
-                          {item.disponible ? (
-                            <div className="flex items-center gap-2 status-available px-3 py-1.5 rounded-full">
-                              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                              <span className="text-sm font-bold">Disponible</span>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 status-unavailable px-3 py-1.5 rounded-full">
-                              <div className="w-2 h-2 bg-white rounded-full"></div>
-                              <span className="text-sm font-bold">Ocupado</span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2 status-available px-3 py-1.5 rounded-full">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                            <span className="text-sm font-bold">Disponible</span>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold text-gray-700">S/. {item.precio_consulta_base}</p>
+                            <p className="text-xs text-gray-500">por consulta</p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -385,55 +301,57 @@ export default function MedicalSearch() {
               </div>
             )}
 
-            {/* Servicios */}
-            {results.servicios.length > 0 && (
+            {/* Clínicas */}
+            {results.clinicas.length > 0 && (
               <div className="p-6 border-b border-gray-100/60">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 gradient-servicios rounded-2xl flex items-center justify-center shadow-lg">
-                    <FileText className="h-6 w-6 text-white" />
+                    <Building2 className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">Servicios Médicos</h3>
-                    <p className="text-sm text-gray-600">Servicios y procedimientos disponibles</p>
+                    <h3 className="text-xl font-bold text-gray-800">Clínicas</h3>
+                    <p className="text-sm text-gray-600">Centros médicos disponibles</p>
                   </div>
                   <div className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold">
-                    {results.servicios.length} servicios
+                    {results.clinicas.length} clínicas
                   </div>
                 </div>
                 <div className="grid gap-4">
-                  {results.servicios.map((item) => (
+                  {results.clinicas.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => handleServicioClick(item)}
+                      onClick={() => handleClinicaClick(item)}
                       className="medical-card group relative p-5 bg-gradient-to-r from-purple-50/80 to-violet-50/80 hover:from-purple-100/90 hover:to-violet-100/90 rounded-2xl cursor-pointer transition-all duration-500 hover:shadow-xl hover:scale-[1.02] border border-purple-100/50 hover:border-purple-200"
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="text-xl font-bold text-gray-800 group-hover:text-purple-700 transition-colors mb-3">
+                          <h4 className="text-xl font-bold text-gray-800 group-hover:text-purple-700 transition-colors mb-2">
                             {item.nombre}
                           </h4>
-                          <div className="flex items-center gap-4">
-                            <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold">
-                              {item.categoria}
-                            </span>
-                            <span className="text-2xl font-bold text-gray-700 group-hover:text-purple-600 transition-colors">
-                              {item.precio}
-                            </span>
+                          <div className="flex items-center gap-2 text-gray-500 mb-2">
+                            <MapPin className="h-4 w-4" />
+                            <p className="text-sm">{item.direccion}</p>
                           </div>
+                          <div className="flex items-center gap-2 text-gray-500 mb-3">
+                            <Phone className="h-4 w-4" />
+                            <p className="text-sm">{item.telefono}</p>
+                          </div>
+                          {item.descripcion && (
+                            <p className="text-gray-600 text-sm leading-relaxed">{item.descripcion}</p>
+                          )}
                         </div>
                         <div className="ml-6 flex flex-col items-end gap-3">
-                          {item.disponible ? (
+                          {item.activa ? (
                             <div className="flex items-center gap-2 status-available px-3 py-1.5 rounded-full">
                               <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                              <span className="text-sm font-bold">Disponible</span>
+                              <span className="text-sm font-bold">Activa</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-2 status-unavailable px-3 py-1.5 rounded-full">
                               <div className="w-2 h-2 bg-white rounded-full"></div>
-                              <span className="text-sm font-bold">No disponible</span>
+                              <span className="text-sm font-bold">Inactiva</span>
                             </div>
                           )}
-                          <MapPin className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors" />
                         </div>
                       </div>
                     </div>
@@ -442,42 +360,124 @@ export default function MedicalSearch() {
               </div>
             )}
 
-            {/* Información Médica */}
-            {results.informacion.length > 0 && (
-              <div className="p-6">
+            {/* Citas */}
+            {results.citas.length > 0 && (
+              <div className="p-6 border-b border-gray-100/60">
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-12 h-12 gradient-informacion rounded-2xl flex items-center justify-center shadow-lg">
-                    <AlertCircle className="h-6 w-6 text-white" />
+                    <Calendar className="h-6 w-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">Información Médica</h3>
-                    <p className="text-sm text-gray-600">Guías, consejos y recursos de salud</p>
+                    <h3 className="text-xl font-bold text-gray-800">Citas Médicas</h3>
+                    <p className="text-sm text-gray-600">Citas programadas en el sistema</p>
                   </div>
                   <div className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold">
-                    {results.informacion.length} artículos
+                    {results.citas.length} citas
                   </div>
                 </div>
                 <div className="grid gap-4">
-                  {results.informacion.map((item) => (
+                  {results.citas.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => handleInformacionClick(item)}
+                      onClick={() => handleCitaClick(item)}
                       className="medical-card group relative p-5 bg-gradient-to-r from-orange-50/80 to-amber-50/80 hover:from-orange-100/90 hover:to-amber-100/90 rounded-2xl cursor-pointer transition-all duration-500 hover:shadow-xl hover:scale-[1.02] border border-orange-100/50 hover:border-orange-200"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">
-                            <span className="px-3 py-1.5 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold">
-                              {item.categoria}
+                            <span className={`px-3 py-1.5 rounded-full text-sm font-semibold ${
+                              item.estado === 'CONFIRMADA' 
+                                ? 'bg-blue-100 text-blue-700'
+                                : item.estado === 'COMPLETADA'
+                                ? 'bg-green-100 text-green-700'
+                                : item.estado === 'CANCELADA'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {item.estado}
                             </span>
                           </div>
-                          <h4 className="text-xl font-bold text-gray-800 group-hover:text-orange-700 transition-colors mb-3">
-                            {item.titulo}
+                          <h4 className="text-xl font-bold text-gray-800 group-hover:text-orange-700 transition-colors mb-2">
+                            {item.motivo || 'Consulta médica'}
                           </h4>
-                          <p className="text-gray-600 text-base leading-relaxed">{item.contenido}</p>
+                          <div className="flex items-center gap-4 text-gray-600 text-sm mb-2">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>{new Date(item.fecha).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" />
+                              <span>{item.hora_inicio}</span>
+                            </div>
+                          </div>
+                          {item.notas && (
+                            <p className="text-gray-600 text-sm leading-relaxed">{item.notas}</p>
+                          )}
                         </div>
-                        <div className="ml-6">
-                          <FileText className="h-6 w-6 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                        <div className="ml-6 text-right">
+                          <p className="text-lg font-bold text-gray-700">S/. {item.precio_consulta}</p>
+                          <p className="text-xs text-gray-500">consulta</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Usuarios */}
+            {results.usuarios.length > 0 && (
+              <div className="p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <UserCheck className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800">Usuarios</h3>
+                    <p className="text-sm text-gray-600">Usuarios registrados en el sistema</p>
+                  </div>
+                  <div className="px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-full text-sm font-bold">
+                    {results.usuarios.length} usuarios
+                  </div>
+                </div>
+                <div className="grid gap-4">
+                  {results.usuarios.map((item) => (
+                    <div
+                      key={item.id}
+                      onClick={() => handleUsuarioClick(item)}
+                      className="medical-card group relative p-5 bg-gradient-to-r from-indigo-50/80 to-purple-50/80 hover:from-indigo-100/90 hover:to-purple-100/90 rounded-2xl cursor-pointer transition-all duration-500 hover:shadow-xl hover:scale-[1.02] border border-indigo-100/50 hover:border-indigo-200"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-4 flex-1">
+                          <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            {item.first_name?.[0]}{item.last_name?.[0]}
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-lg font-bold text-gray-800 group-hover:text-indigo-700 transition-colors mb-1">
+                              {item.first_name} {item.last_name}
+                            </h4>
+                            <p className="text-gray-600 text-sm mb-2">{item.email}</p>
+                            <div className="flex flex-wrap gap-1">
+                              {item.roles?.map((role) => (
+                                <span key={role.id} className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+                                  {role.rol_nombre}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-2">
+                          {item.is_active ? (
+                            <div className="flex items-center gap-2 status-available px-2 py-1 rounded-full">
+                              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                              <span className="text-xs font-bold">Activo</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 status-unavailable px-2 py-1 rounded-full">
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                              <span className="text-xs font-bold">Inactivo</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -512,26 +512,33 @@ export default function MedicalSearch() {
                 <div className="w-16 h-16 gradient-medicos rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg">
                   <User className="h-8 w-8 text-white" />
                 </div>
-                <p className="text-base font-bold text-emerald-700 mb-1">Médicos</p>
+                <p className="text-base font-bold text-emerald-700 mb-1">Doctores</p>
                 <p className="text-sm text-emerald-600">Conoce a nuestro equipo</p>
               </div>
               <div className="group p-6 bg-gradient-to-br from-purple-50 via-violet-100 to-purple-100 hover:from-purple-100 hover:via-violet-200 hover:to-purple-200 rounded-2xl transition-all duration-500 cursor-pointer hover:shadow-xl hover:scale-105">
                 <div className="w-16 h-16 gradient-servicios rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                  <FileText className="h-8 w-8 text-white" />
+                  <Building2 className="h-8 w-8 text-white" />
                 </div>
-                <p className="text-base font-bold text-purple-700 mb-1">Servicios</p>
-                <p className="text-sm text-purple-600">Explora nuestros servicios</p>
+                <p className="text-base font-bold text-purple-700 mb-1">Clínicas</p>
+                <p className="text-sm text-purple-600">Centros médicos disponibles</p>
               </div>
               <div className="group p-6 bg-gradient-to-br from-orange-50 via-amber-100 to-orange-100 hover:from-orange-100 hover:via-amber-200 hover:to-orange-200 rounded-2xl transition-all duration-500 cursor-pointer hover:shadow-xl hover:scale-105">
                 <div className="w-16 h-16 gradient-informacion rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg">
-                  <AlertCircle className="h-8 w-8 text-white" />
+                  <Calendar className="h-8 w-8 text-white" />
                 </div>
-                <p className="text-base font-bold text-orange-700 mb-1">Información</p>
-                <p className="text-sm text-orange-600">Guías y consejos médicos</p>
+                <p className="text-base font-bold text-orange-700 mb-1">Citas</p>
+                <p className="text-sm text-orange-600">Gestión de citas médicas</p>
+              </div>
+              <div className="group p-6 bg-gradient-to-br from-indigo-50 via-purple-100 to-indigo-100 hover:from-indigo-100 hover:via-purple-200 hover:to-indigo-200 rounded-2xl transition-all duration-500 cursor-pointer hover:shadow-xl hover:scale-105">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                  <UserCheck className="h-8 w-8 text-white" />
+                </div>
+                <p className="text-base font-bold text-indigo-700 mb-1">Usuarios</p>
+                <p className="text-sm text-indigo-600">Usuarios del sistema</p>
               </div>
             </div>
             <p className="text-gray-500 text-base">
-              Comienza escribiendo para buscar especialidades, médicos, servicios o información médica
+              Comienza escribiendo para buscar especialidades, doctores, clínicas, citas o usuarios
             </p>
           </div>
         )}
