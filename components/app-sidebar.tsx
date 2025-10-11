@@ -62,6 +62,7 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
         items: [
           { title: "Gestión de Doctores", url: "/dashboard/doctores" },
           { title: "Gestión de Pacientes", url: "/dashboard/pacientes" },
+          { title: "Horarios Médicos", url: "/dashboard/horarios" },
         ],
       },
       {
