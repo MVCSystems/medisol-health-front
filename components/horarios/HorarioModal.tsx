@@ -8,23 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Clock, Save, X } from 'lucide-react';
-
-interface HorarioData {
-  id?: number;
-  doctor: number;
-  dia_semana: number;
-  hora_inicio: string;
-  hora_fin: string;
-  duracion_cita: number;
-  activo: boolean;
-}
+import type { HorarioDoctor } from '@/types/clinicas';
 
 interface HorarioModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: HorarioData) => Promise<{ success: boolean; error?: string }>;
+  onSave: (data: HorarioDoctor) => Promise<{ success: boolean; error?: string }>;
   doctorId: number;
-  horario?: HorarioData | null;
+  horario?: HorarioDoctor | null;
   mode: 'create' | 'edit';
 }
 
@@ -55,13 +46,16 @@ export default function HorarioModal({
   horario,
   mode
 }: HorarioModalProps) {
-  const [formData, setFormData] = useState<HorarioData>({
+  const [formData, setFormData] = useState<HorarioDoctor>({
     doctor: doctorId,
     dia_semana: 0,
     hora_inicio: '08:00',
     hora_fin: '17:00',
     duracion_cita: 30,
-    activo: true
+    activo: true,
+    tiene_refrigerio: true,
+    hora_refrigerio_inicio: '12:00',
+    hora_refrigerio_fin: '13:00'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +69,10 @@ export default function HorarioModal({
         hora_inicio: horario.hora_inicio,
         hora_fin: horario.hora_fin,
         duracion_cita: horario.duracion_cita,
-        activo: horario.activo
+        activo: horario.activo,
+        tiene_refrigerio: horario.tiene_refrigerio ?? true,
+        hora_refrigerio_inicio: horario.hora_refrigerio_inicio ?? '12:00',
+        hora_refrigerio_fin: horario.hora_refrigerio_fin ?? '13:00'
       });
     } else {
       setFormData({
@@ -84,7 +81,10 @@ export default function HorarioModal({
         hora_inicio: '08:00',
         hora_fin: '17:00',
         duracion_cita: 30,
-        activo: true
+        activo: true,
+        tiene_refrigerio: true,
+        hora_refrigerio_inicio: '12:00',
+        hora_refrigerio_fin: '13:00'
       });
     }
     setError(null);
@@ -109,15 +109,15 @@ export default function HorarioModal({
       } else {
         setError(result.error || 'Error al guardar el horario');
       }
-    } catch (err) {
+    } catch {
       setError('Error inesperado al guardar');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFieldChange = (field: keyof HorarioData, value: string | number | boolean) => {
-    setFormData(prev => ({
+  const handleFieldChange = (field: keyof HorarioDoctor, value: string | number | boolean) => {
+    setFormData((prev: HorarioDoctor) => ({
       ...prev,
       [field]: value
     }));

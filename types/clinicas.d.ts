@@ -168,13 +168,18 @@ export interface CitaCreate {
 
 // Tipos para horarios de doctores
 export interface HorarioDoctor {
-  id: number;
+  id?: number;
   doctor: number;
+  doctor_nombre?: string;
   dia_semana: number;
+  dia_semana_display?: string;
   hora_inicio: string;
   hora_fin: string;
   duracion_cita: number;
   activo: boolean;
+  tiene_refrigerio?: boolean;
+  hora_refrigerio_inicio?: string;
+  hora_refrigerio_fin?: string;
 }
 
 // Tipos para disponibilidad de citas

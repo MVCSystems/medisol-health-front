@@ -9,19 +9,9 @@ import { useHorarios, useDisponibilidad } from '@/hooks/useHorarios';
 import { doctorService } from '@/services/doctor.service';
 import HorarioModal from './HorarioModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
-import type { Doctor } from '@/types/clinicas';
+import type { Doctor, HorarioDoctor } from '@/types/clinicas';
 
 const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
-interface HorarioData {
-  id?: number;
-  doctor: number;
-  dia_semana: number;
-  hora_inicio: string;
-  hora_fin: string;
-  duracion_cita: number;
-  activo: boolean;
-}
 
 export default function HorariosManager() {
   const [doctores, setDoctores] = useState<Doctor[]>([]);
@@ -31,7 +21,7 @@ export default function HorariosManager() {
   // Estados para modales
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
-  const [horarioEditando, setHorarioEditando] = useState<HorarioData | null>(null);
+  const [horarioEditando, setHorarioEditando] = useState<HorarioDoctor | null>(null);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [horarioEliminando, setHorarioEliminando] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -88,12 +78,15 @@ export default function HorariosManager() {
       hora_inicio: '',
       hora_fin: '',
       duracion_cita: 30,
-      activo: true
+      activo: true,
+      tiene_refrigerio: true,
+      hora_refrigerio_inicio: '12:00',
+      hora_refrigerio_fin: '13:00'
     });
     setModalOpen(true);
   };
 
-  const handleEditarHorario = (horario: HorarioData) => {
+  const handleEditarHorario = (horario: HorarioDoctor) => {
     setModalMode('edit');
     setHorarioEditando(horario);
     setModalOpen(true);
@@ -104,7 +97,7 @@ export default function HorariosManager() {
     setDeleteModalOpen(true);
   };
 
-  const handleSaveHorario = async (data: HorarioData) => {
+  const handleSaveHorario = async (data: HorarioDoctor) => {
     try {
       let result;
       if (modalMode === 'create') {
@@ -186,12 +179,12 @@ export default function HorariosManager() {
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                     <span className="text-primary font-semibold">
-                      {doctor.nombres?.[0] || 'D'}{doctor.apellidos?.[0] || 'R'}
+                      {(doctor.nombres || doctor.usuario_data?.first_name)?.[0] || 'D'}{(doctor.apellidos || doctor.usuario_data?.last_name)?.[0] || 'R'}
                     </span>
                   </div>
                   <div>
                     <p className="font-medium">
-                      Dr. {doctor.nombres} {doctor.apellidos}
+                      Dr. {doctor.nombres || doctor.usuario_data?.first_name} {doctor.apellidos || doctor.usuario_data?.last_name}
                     </p>
                     <p className="text-sm text-gray-600">{doctor.titulo}</p>
                   </div>
@@ -209,7 +202,7 @@ export default function HorariosManager() {
             <div className="flex justify-between items-center">
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Horarios - Dr. {doctorActual?.nombres} {doctorActual?.apellidos}
+                Horarios - Dr. {doctorActual?.nombres || doctorActual?.usuario_data?.first_name} {doctorActual?.apellidos || doctorActual?.usuario_data?.last_name}
               </CardTitle>
               <div className="flex gap-2">
                 <Button
