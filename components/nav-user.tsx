@@ -56,12 +56,12 @@ export function NavUser() {
 
   const getRoleBadgeColor = () => {
     try {
-      if (isAdmin()) return "bg-red-100 text-red-800"
-      if (isDoctor()) return "bg-blue-100 text-blue-800"
-      if (isPaciente()) return "bg-green-100 text-green-800"
-      return "bg-gray-100 text-gray-800"
+      if (isAdmin()) return "bg-destructive/10 text-destructive border border-destructive/20"
+      if (isDoctor()) return "bg-primary/10 text-primary border border-primary/20"
+      if (isPaciente()) return "bg-secondary/10 text-secondary border border-secondary/20"
+      return "bg-muted text-muted-foreground border border-muted"
     } catch {
-      return "bg-gray-100 text-gray-800"
+      return "bg-muted text-muted-foreground border border-muted"
     }
   }
 
@@ -104,7 +104,7 @@ export function NavUser() {
                 </AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{fullName}</span>
+                <span className="truncate font-semibold">{fullName}</span>
                 <span className="truncate text-xs text-muted-foreground">{user.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -124,7 +124,7 @@ export function NavUser() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{fullName}</span>
+                  <span className="truncate font-semibold">{fullName}</span>
                   <div className="flex items-center gap-1 mt-1">
                     <Badge className={`text-xs px-1.5 py-0.5 ${getRoleBadgeColor()}`}>
                       {getRoleLabel()}
