@@ -47,33 +47,53 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
   if (isAdmin) {
     navMain.push(
       {
-        title: "Clínicas",
+        title: "Administración",
         url: "/dashboard/clinicas",
         icon: Building2,
         items: [
-          { title: "Ver Clínicas", url: "/dashboard/clinicas" },
+          { title: "Clínicas", url: "/dashboard/clinicas" },
           { title: "Especialidades", url: "/dashboard/especialidades" },
         ],
       },
       {
-        title: "Gestión de Usuarios",
+        title: "Personal Médico",
+        url: "/dashboard/doctores",
+        icon: Stethoscope,
+        items: [
+          { title: "Gestión de Doctores", url: "/dashboard/doctores" },
+          { title: "Gestión de Pacientes", url: "/dashboard/pacientes" },
+        ],
+      },
+      {
+        title: "Sistema de Usuarios",
         url: "/dashboard/usuarios",
         icon: Users,
         items: [
           { title: "Todos los Usuarios", url: "/dashboard/usuarios" },
-          { title: "Solo Doctores", url: "/dashboard/usuarios?role=DOCTOR" },
-          { title: "Solo Pacientes", url: "/dashboard/usuarios?role=PACIENTE" },
-          { title: "Solo Administradores", url: "/dashboard/usuarios?role=ADMIN" },
+          { title: "Administradores", url: "/dashboard/usuarios?role=ADMIN" },
+          { title: "Personal Médico", url: "/dashboard/usuarios?role=DOCTOR" },
+          { title: "Pacientes del Sistema", url: "/dashboard/usuarios?role=PACIENTE" },
         ],
       },
       {
-        title: "Reportes",
-        url: "/dashboard/admin/reportes",
+        title: "Citas Médicas",
+        url: "/dashboard/citas",
+        icon: Calendar,
+        items: [
+          { title: "Todas las Citas", url: "/dashboard/citas" },
+          { title: "Citas de Hoy", url: "/dashboard/citas?fecha=hoy" },
+          { title: "Programar Cita", url: "/dashboard/citas/nueva" },
+        ],
+      },
+      {
+        title: "Reportes y Análisis",
+        url: "/dashboard/reportes",
         icon: FileText,
         items: [
-          { title: "Estadísticas", url: "/dashboard/admin/reportes/estadisticas" },
-          { title: "Ingresos", url: "/dashboard/admin/reportes/ingresos" },
-          { title: "Citas", url: "/dashboard/admin/reportes/citas" },
+          { title: "Dashboard Estadísticas", url: "/dashboard/reportes/estadisticas" },
+          { title: "Reporte de Ingresos", url: "/dashboard/reportes/ingresos" },
+          { title: "Análisis de Citas", url: "/dashboard/reportes/citas" },
+          { title: "Rendimiento Médico", url: "/dashboard/reportes/doctores" },
         ],
       }
     )
@@ -83,32 +103,34 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
   if (isDoctor) {
     navMain.push(
       {
+        title: "Mi Consultorio",
+        url: "/doctor/agenda",
+        icon: Calendar,
+        items: [
+          { title: "Agenda del Día", url: "/doctor/citas/hoy" },
+          { title: "Próximas Citas", url: "/doctor/citas/proximas" },
+          { title: "Configurar Horarios", url: "/doctor/horarios" },
+        ],
+      },
+      {
         title: "Mis Pacientes",
         url: "/doctor/pacientes",
         icon: UserCheck,
         items: [
           { title: "Lista de Pacientes", url: "/doctor/pacientes" },
-          { title: "Historial Médico", url: "/doctor/historiales" },
+          { title: "Historiales Médicos", url: "/doctor/historiales" },
+          { title: "Buscar Paciente", url: "/doctor/pacientes/buscar" },
         ],
       },
       {
-        title: "Mi Agenda",
-        url: "/doctor/agenda",
-        icon: Calendar,
-        items: [
-          { title: "Citas de Hoy", url: "/doctor/citas/hoy" },
-          { title: "Próximas Citas", url: "/doctor/citas/proximas" },
-          { title: "Horarios", url: "/doctor/horarios" },
-        ],
-      },
-      {
-        title: "Consultas",
+        title: "Consultas Médicas",
         url: "/doctor/consultas",
         icon: Stethoscope,
         items: [
-          { title: "En Curso", url: "/doctor/consultas/activas" },
-          { title: "Completadas", url: "/doctor/consultas/completadas" },
-          { title: "Recetas", url: "/doctor/recetas" },
+          { title: "Consultas Activas", url: "/doctor/consultas/activas" },
+          { title: "Historial de Consultas", url: "/doctor/consultas/completadas" },
+          { title: "Recetas Emitidas", url: "/doctor/recetas" },
+          { title: "Diagnósticos", url: "/doctor/diagnosticos" },
         ],
       }
     )
@@ -118,34 +140,82 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
   if (isPaciente) {
     navMain.push(
       {
-        title: "Mis Citas",
+        title: "Mis Citas Médicas",
         url: "/paciente/citas",
         icon: Calendar,
         items: [
+          { title: "Agendar Nueva Cita", url: "/paciente/citas/nueva" },
           { title: "Próximas Citas", url: "/paciente/citas/proximas" },
-          { title: "Historial", url: "/paciente/citas/historial" },
-          { title: "Agendar Cita", url: "/paciente/citas/nueva" },
+          { title: "Historial de Citas", url: "/paciente/citas/historial" },
+          { title: "Cancelar Cita", url: "/paciente/citas/cancelar" },
         ],
       },
       {
-        title: "Mi Salud",
+        title: "Mi Expediente Médico",
         url: "/paciente/salud",
         icon: Heart,
         items: [
-          { title: "Historial Médico", url: "/paciente/historial" },
-          { title: "Recetas", url: "/paciente/recetas" },
-          { title: "Resultados", url: "/paciente/resultados" },
+          { title: "Resumen de Salud", url: "/paciente/historial/resumen" },
+          { title: "Historial Clínico", url: "/paciente/historial" },
+          { title: "Mis Recetas", url: "/paciente/recetas" },
+          { title: "Resultados de Exámenes", url: "/paciente/resultados" },
+        ],
+      },
+      {
+        title: "Mi Información",
+        url: "/paciente/perfil",
+        icon: UserCheck,
+        items: [
+          { title: "Datos Personales", url: "/paciente/perfil" },
+          { title: "Contacto de Emergencia", url: "/paciente/contactos" },
+          { title: "Seguros Médicos", url: "/paciente/seguros" },
         ],
       }
     )
   }
 
-  // Chat médico - todos los roles
-  navMain.push({
-    title: "Chat Médico",
-    url: "/chat",
-    icon: MessageSquare,
-  })
+  // Chat médico - todos los roles con opciones específicas
+  if (isAdmin) {
+    navMain.push({
+      title: "Centro de Comunicación",
+      url: "/chat",
+      icon: MessageSquare,
+      items: [
+        { title: "Chat General", url: "/chat" },
+        { title: "Soporte Técnico", url: "/chat/soporte" },
+        { title: "Comunicados", url: "/chat/comunicados" },
+      ],
+    })
+  } else if (isDoctor) {
+    navMain.push({
+      title: "Comunicación Médica",
+      url: "/chat",
+      icon: MessageSquare,
+      items: [
+        { title: "Chat con Pacientes", url: "/chat/pacientes" },
+        { title: "Consultas IA", url: "/chat" },
+        { title: "Colegas", url: "/chat/doctores" },
+      ],
+    })
+  } else if (isPaciente) {
+    navMain.push({
+      title: "Asistencia Médica",
+      url: "/chat",
+      icon: MessageSquare,
+      items: [
+        { title: "Consulta Virtual", url: "/chat" },
+        { title: "Chat con mi Doctor", url: "/chat/doctor" },
+        { title: "Soporte", url: "/chat/soporte" },
+      ],
+    })
+  } else {
+    // Usuario no autenticado o sin rol específico
+    navMain.push({
+      title: "Asistente Médico IA",
+      url: "/chat",
+      icon: MessageSquare,
+    })
+  }
 
   return {
     navMain,
@@ -158,17 +228,23 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
     ],
     quickActions: isAdmin 
       ? [
-          { name: "Nueva Clínica", url: "/dashboard/admin/clinicas/nueva", icon: Building2 },
-          { name: "Nuevo Doctor", url: "/dashboard/admin/doctores/nuevo", icon: UserCheck },
+          { name: "Registrar Doctor", url: "/dashboard/doctores", icon: Stethoscope },
+          { name: "Registrar Paciente", url: "/dashboard/pacientes", icon: UserCheck },
+          { name: "Nueva Clínica", url: "/dashboard/clinicas", icon: Building2 },
+          { name: "Ver Reportes", url: "/dashboard/reportes", icon: FileText },
         ]
       : isDoctor
       ? [
+          { name: "Mi Agenda Hoy", url: "/doctor/citas/hoy", icon: Calendar },
+          { name: "Mis Pacientes", url: "/doctor/pacientes", icon: UserCheck },
           { name: "Nueva Consulta", url: "/doctor/consultas/nueva", icon: Clipboard },
-          { name: "Ver Agenda", url: "/doctor/agenda", icon: Clock },
+          { name: "Ver Horarios", url: "/doctor/horarios", icon: Clock },
         ]
       : [
           { name: "Agendar Cita", url: "/paciente/citas/nueva", icon: Calendar },
-          { name: "Mi Historial", url: "/paciente/historial", icon: FileText },
+          { name: "Mi Historial", url: "/paciente/historial", icon: Heart },
+          { name: "Mis Recetas", url: "/paciente/recetas", icon: FileText },
+          { name: "Mi Perfil", url: "/paciente/perfil", icon: UserCheck },
         ]
   }
 }

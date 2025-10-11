@@ -16,6 +16,7 @@ import {
     TrendingUp,
     AlertCircle,
     CheckCircle2,
+    Stethoscope,
     type LucideIcon
 } from "lucide-react"
 // Badge component para usar en futuras funcionalidades
@@ -75,24 +76,25 @@ export default function DashboardContent() {
                 const requests: Promise<any>[] = []
                 
                 if (isAdmin()) {
-                    // Administradores ven todo
+                    // Administradores ven todo - URLs correctas según el router
                     requests.push(
-                        api.get("/api/clinicas/"),
+                        api.get("/api/clinicas/clinicas/"),
                         api.get("/api/clinicas/doctores/"),
                         api.get("/api/clinicas/pacientes/"),
                         api.get("/api/clinicas/citas/"),
-                        api.get("/api/clinicas/especialidades/")
+                        api.get("/api/clinicas/especialidades/"),
+                        api.get("/api/usuarios/usuarios/") // Para contar usuarios y roles
                     )
                 } else if (isDoctor()) {
                     // Doctores ven sus propias estadísticas
                     requests.push(
-                        api.get("/api/clinicas/citas/mis_citas/"),
+                        api.get("/api/clinicas/citas/"),
                         api.get("/api/clinicas/pacientes/")
                     )
                 } else if (isPaciente()) {
                     // Pacientes ven solo sus citas
                     requests.push(
-                        api.get("/api/clinicas/citas/mis_citas/")
+                        api.get("/api/clinicas/citas/")
                     )
                 }
 
@@ -100,32 +102,71 @@ export default function DashboardContent() {
                 
                 // Procesar respuestas según el rol
                 if (isAdmin()) {
-                    const [clinicasRes, doctoresRes, pacientesRes, citasRes, especialidadesRes] = responses
+                    const [clinicasRes, doctoresRes, , citasRes, especialidadesRes, usuariosRes] = responses
+                    
+                    // Función helper para extraer el conteo correcto de las respuestas
+                    const getCount = (response: PromiseSettledResult<{ data: { count?: number; length?: number; results?: unknown[] } }>) => {
+                        if (response.status !== 'fulfilled') return 0
+                        
+                        const data = response.value.data
+                        
+                        // Si es una respuesta paginada con count (más preciso)
+                        if (data.count !== undefined) return data.count
+                        // Si es un array directo
+                        if (Array.isArray(data)) return data.length
+                        // Si tiene results array (respuesta paginada)
+                        if (data.results && Array.isArray(data.results)) return data.results.length
+                        
+                        return 0
+                    }
+                    
+                    // Contar usuarios con rol Paciente específicamente
+                    let pacientesCount = 0
+                    if (usuariosRes.status === 'fulfilled') {
+                        const usuarios = usuariosRes.value.data.results || usuariosRes.value.data || []
+                        
+                        pacientesCount = usuarios.filter((usuario: { roles?: Array<{ rol_nombre: string }> }) => 
+                            usuario.roles?.some(rol => rol.rol_nombre === 'Paciente')
+                        ).length
+                    }
+                    
+                    // Procesar citas para estadísticas detalladas
+                    let citasHoy = 0
+                    let citasPendientes = 0
+                    let citasCompletadas = 0
+                    
+                    if (citasRes.status === 'fulfilled') {
+                        const citas = citasRes.value.data.results || citasRes.value.data || []
+                        const hoy = new Date().toISOString().split('T')[0]
+                        
+                        citas.forEach((cita: Cita) => {
+                            if (cita.fecha === hoy) citasHoy++
+                            if (cita.estado === 'PENDIENTE') citasPendientes++
+                            if (cita.estado === 'COMPLETADA') citasCompletadas++
+                        })
+                    }
                     
                     setStats({
-                        clinicas: clinicasRes.status === 'fulfilled' ? clinicasRes.value.data.count || clinicasRes.value.data.length || 0 : 0,
-                        doctores: doctoresRes.status === 'fulfilled' ? doctoresRes.value.data.count || doctoresRes.value.data.length || 0 : 0,
-                        pacientes: pacientesRes.status === 'fulfilled' ? pacientesRes.value.data.count || pacientesRes.value.data.length || 0 : 0,
-                        citas_hoy: 0, // Se calculará después
-                        citas_pendientes: citasRes.status === 'fulfilled' ? 
-                            citasRes.value.data.results?.filter((cita: Cita) => cita.estado === 'PENDIENTE').length || 0 : 0,
-                        citas_completadas: citasRes.status === 'fulfilled' ? 
-                            citasRes.value.data.results?.filter((cita: Cita) => cita.estado === 'COMPLETADA').length || 0 : 0,
-                        especialidades: especialidadesRes.status === 'fulfilled' ? especialidadesRes.value.data.count || especialidadesRes.value.data.length || 0 : 0
+                        clinicas: getCount(clinicasRes),
+                        doctores: getCount(doctoresRes),
+                        pacientes: pacientesCount, // Conteo preciso basado en roles
+                        citas_hoy: citasHoy,
+                        citas_pendientes: citasPendientes,
+                        citas_completadas: citasCompletadas,
+                        especialidades: getCount(especialidadesRes)
                     })
                 } else {
                     // Para doctores y pacientes, solo mostrar sus propias estadísticas
                     const citasRes = responses[0]
                     if (citasRes.status === 'fulfilled') {
                         const citas = citasRes.value.data.results || citasRes.value.data || []
+                        const hoy = new Date().toISOString().split('T')[0]
+                        
                         setStats(prev => ({
                             ...prev,
                             citas_pendientes: citas.filter((cita: Cita) => cita.estado === 'PENDIENTE').length,
                             citas_completadas: citas.filter((cita: Cita) => cita.estado === 'COMPLETADA').length,
-                            citas_hoy: citas.filter((cita: Cita) => {
-                                const hoy = new Date().toISOString().split('T')[0]
-                                return cita.fecha === hoy
-                            }).length
+                            citas_hoy: citas.filter((cita: Cita) => cita.fecha === hoy).length
                         }))
                     }
                 }
@@ -144,6 +185,23 @@ export default function DashboardContent() {
     // Componente para mostrar estadísticas
     const StatCard = ({ title, value, description, icon: Icon }: StatCardProps) => (
         <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{value}</div>
+                <p className="text-xs text-muted-foreground">{description}</p>
+            </CardContent>
+        </Card>
+    )
+
+    // Componente clickeable para navegación
+    const ClickableStatCard = ({ title, value, description, icon: Icon, onClick }: StatCardProps & { onClick?: () => void }) => (
+        <Card 
+            className={`${onClick ? 'cursor-pointer hover:shadow-md transition-shadow' : ''}`}
+            onClick={onClick}
+        >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{title}</CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground" />
@@ -210,17 +268,19 @@ export default function DashboardContent() {
                                     description="Total de clínicas registradas"
                                     icon={Building2}
                                 />
-                                <StatCard
+                                <ClickableStatCard
                                     title="Doctores"
                                     value={stats.doctores}
                                     description="Médicos en el sistema"
-                                    icon={Users}
+                                    icon={Stethoscope}
+                                    onClick={() => router.push('/dashboard/doctores')}
                                 />
-                                <StatCard
+                                <ClickableStatCard
                                     title="Pacientes"
                                     value={stats.pacientes}
                                     description="Pacientes registrados"
                                     icon={UserPlus}
+                                    onClick={() => router.push('/dashboard/pacientes')}
                                 />
                                 <StatCard
                                     title="Especialidades"
