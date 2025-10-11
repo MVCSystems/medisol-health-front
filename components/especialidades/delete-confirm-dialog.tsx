@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   AlertDialog,
@@ -9,27 +9,27 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import type { Usuario } from '@/types/usuario';
+} from '@/components/ui/alert-dialog'
+import type { Especialidad } from '@/types/clinicas'
 
 interface DeleteConfirmDialogProps {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  usuario: Usuario | null;
-  isLoading?: boolean;
+  open: boolean
+  onClose: () => void
+  onConfirm: () => void
+  especialidad: Especialidad | null
+  loading: boolean
 }
 
-export default function DeleteConfirmDialog({
+export function DeleteConfirmDialog({
   open,
   onClose,
   onConfirm,
-  usuario,
-  isLoading = false
+  especialidad,
+  loading,
 }: DeleteConfirmDialogProps) {
-  if (!usuario) return null;
+  if (!especialidad) return null
 
-  const userName = `${usuario.first_name} ${usuario.last_name}`.trim() || usuario.dni;
+  const especialidadName = especialidad.nombre
 
   return (
     <AlertDialog open={open} onOpenChange={onClose}>
@@ -38,27 +38,27 @@ export default function DeleteConfirmDialog({
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <div>
-              Esta acción eliminará permanentemente al usuario{' '}
-              <span className="font-semibold">{userName}</span> (DNI: {usuario.dni}).
+              Esta acción eliminará permanentemente la especialidad{' '}
+              <span className="font-semibold">{especialidadName}</span>.
             </div>
             <div className="text-red-600">
-              Esta acción no se puede deshacer.
+              Esta acción no se puede deshacer y también afectará a todos los doctores asociados a esta especialidad.
             </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>
+          <AlertDialogCancel disabled={loading}>
             Cancelar
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            disabled={loading}
+            className="bg-red-600 hover:bg-red-700"
           >
-            {isLoading ? 'Eliminando...' : 'Eliminar Usuario'}
+            {loading ? 'Eliminando...' : 'Eliminar'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
+  )
 }

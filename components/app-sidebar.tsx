@@ -47,13 +47,12 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
   if (isAdmin) {
     navMain.push(
       {
-        title: "Gestión de Clínicas",
-        url: "/dashboard/admin/clinicas",
+        title: "Clínicas",
+        url: "/dashboard/clinicas",
         icon: Building2,
         items: [
-          { title: "Ver Clínicas", url: "/dashboard/admin/clinicas" },
-          { title: "Nueva Clínica", url: "/dashboard/admin/clinicas/nueva" },
-          { title: "Especialidades", url: "/dashboard/admin/especialidades" },
+          { title: "Ver Clínicas", url: "/dashboard/clinicas" },
+          { title: "Especialidades", url: "/dashboard/especialidades" },
         ],
       },
       {

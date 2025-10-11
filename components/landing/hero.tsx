@@ -27,18 +27,18 @@ export default function Hero() {
                 className="w-5 h-5 mr-2 text-primary"
                 aria-hidden="true" 
               />
-              Atención médica 24/7
+              Disponible 24/7
             </Badge>
           </div>
           <h2 
             className="text-4xl lg:text-6xl font-bold mb-8 text-balance leading-tight text-foreground"
           >
-            Tu salud, nuestra prioridad
+            Cuida tu salud fácil
           </h2>
           <p 
             className="text-lg lg:text-xl mb-8 max-w-2xl mx-auto text-muted-foreground"
           >
-            Agenda tu cita fácil y rápido. Te acompañamos en cada paso.
+            Reserva tu cita médica en minutos, desde casa.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-8">
             <Button
@@ -50,7 +50,7 @@ export default function Hero() {
                 className="mr-3 h-7 w-7 text-primary-foreground" 
                 aria-hidden="true" 
               />
-              Agendar Cita
+              Reservar Cita
             </Button>
             <Link href="/especialidades">
               <Button
@@ -62,7 +62,7 @@ export default function Hero() {
                   className="mr-3 h-7 w-7 text-primary" 
                   aria-hidden="true" 
                 />
-                Especialidades
+                Ver Doctores
               </Button>
             </Link>
           </div>
@@ -72,15 +72,15 @@ export default function Hero() {
                 className="w-6 h-6 text-secondary" 
                 aria-hidden="true" 
               />
-              <span className="text-lg font-medium">Atención rápida y sin colas</span>
+              <span className="text-lg font-medium">Sin colas</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-6 h-6 text-primary" aria-hidden="true" />
-              <span className="text-lg font-medium">Trato humano y profesional</span>
+              <span className="text-lg font-medium">Trato humano</span>
             </div>
             <div className="flex items-center gap-2">
               <Shield className="w-6 h-6 text-primary" aria-hidden="true" />
-              <span className="text-lg font-medium">Tus datos y salud protegidos</span>
+              <span className="text-lg font-medium">Datos seguros</span>
             </div>
           </div>
         </div>

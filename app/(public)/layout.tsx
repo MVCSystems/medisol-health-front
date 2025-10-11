@@ -21,10 +21,7 @@ export default function Layout({
           </main>
           <Footer />
         </div>
-        
-        {/* Chatbot global */}
-    
-        
+                
         {/* Iconos decorativos en el fondo */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
           <div className="absolute top-20 left-10 opacity-40">

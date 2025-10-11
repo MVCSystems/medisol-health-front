@@ -12,6 +12,63 @@ export interface Clinica {
   fecha_registro: string;
 }
 
+// Tipos para formularios de clínicas
+export interface CreateClinicaData {
+  nombre: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  sitio_web?: string;
+  logo?: File | null;
+  descripcion?: string;
+  activa?: boolean;
+}
+
+export interface UpdateClinicaData {
+  nombre: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+  sitio_web?: string;
+  logo?: File | null;
+  descripcion?: string;
+  activa: boolean;
+}
+
+// Tipos para respuestas paginadas
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+// Tipos para filtros
+export interface ClinicaFilters {
+  search?: string;
+  activa?: boolean;
+  page?: number;
+}
+
+// Tipos para formularios de especialidades
+export interface CreateEspecialidadData {
+  nombre: string;
+  descripcion?: string;
+  icono?: string;
+}
+
+export interface UpdateEspecialidadData {
+  nombre: string;
+  descripcion?: string;
+  icono?: string;
+}
+
+// Tipos para filtros de especialidades
+export interface EspecialidadFilters {
+  search?: string;
+  page?: number;
+}
+
 // Tipos para especialidades
 export interface Especialidad {
   id: number;
