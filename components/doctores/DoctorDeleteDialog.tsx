@@ -40,36 +40,35 @@ export function DoctorDeleteDialog({
             <Trash2 className="h-5 w-5 text-red-600" />
             ¿Eliminar Doctor?
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <div>
-              Esta acción eliminará permanentemente al doctor{' '}
-              <span className="font-semibold">{doctorName}</span>
-              {doctor.usuario_data?.dni && (
-                <span> (DNI: {doctor.usuario_data.dni})</span>
-              )}
-            </div>
+          <AlertDialogDescription>
+            Esta acción eliminará permanentemente al doctor{' '}
+            <span className="font-semibold">{doctorName}</span>
+            {doctor.usuario_data?.dni && (
+              <span> (DNI: {doctor.usuario_data.dni})</span>
+            )}
             
             {doctor.titulo && (
-              <div className="text-sm text-muted-foreground">
-                Título: {doctor.titulo}
-              </div>
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Título: {doctor.titulo}
+                </span>
+              </>
             )}
 
             {doctor.especialidades_data && doctor.especialidades_data.length > 0 && (
-              <div className="text-sm text-muted-foreground">
-                Especialidades: {doctor.especialidades_data.map(e => e.nombre).join(', ')}
-              </div>
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Especialidades: {doctor.especialidades_data.map(e => e.nombre).join(', ')}
+                </span>
+              </>
             )}
 
-            <div className="text-red-600 font-medium">
-              ⚠️ Esta acción no se puede deshacer y eliminará:
-            </div>
-            <ul className="text-sm text-red-600 list-disc list-inside space-y-1">
-              <li>El perfil del doctor</li>
-              <li>Su usuario asociado en el sistema</li>
-              <li>Todos los roles y permisos</li>
-              <li>El historial de citas (si las hay)</li>
-            </ul>
+            <br /><br />
+            <span className="text-destructive font-medium">
+              ⚠️ Esta acción no se puede deshacer y eliminará: El perfil del doctor, su usuario asociado, todos los roles y permisos, y el historial de citas (si las hay).
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

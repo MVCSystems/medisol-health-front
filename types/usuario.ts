@@ -32,12 +32,16 @@ export interface CreateUsuarioData {
 }
 
 export interface UpdateUsuarioData {
+  dni: string;
   first_name: string;
   last_name: string;
   email: string;
   telefono?: string;
   direccion?: string;
   is_active: boolean;
+  rol?: string;
+  password?: string;
+  password2?: string;
 }
 
 // Tipos para respuestas de API

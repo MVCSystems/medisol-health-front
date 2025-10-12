@@ -36,14 +36,13 @@ export function DeleteConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <div>
-              Esta acción eliminará permanentemente la clínica{' '}
-              <span className="font-semibold">{clinicaName}</span>.
-            </div>
-            <div className="text-red-600">
+          <AlertDialogDescription>
+            Esta acción eliminará permanentemente la clínica{' '}
+            <span className="font-semibold">{clinicaName}</span>.
+            <br />
+            <span className="text-destructive">
               Esta acción no se puede deshacer y también eliminará todos los datos relacionados.
-            </div>
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

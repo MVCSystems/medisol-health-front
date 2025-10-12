@@ -132,6 +132,21 @@ export default function UsuarioForm({
       if (formData.password !== formData.password2) {
         newErrors.password2 = 'Las contraseñas no coinciden';
       }
+    } else {
+      // Validaciones para modo editar
+      if (!formData.dni.trim()) {
+        newErrors.dni = 'El DNI es requerido';
+      } else if (!/^\d{8}$/.test(formData.dni)) {
+        newErrors.dni = 'El DNI debe tener 8 dígitos';
+      }
+
+      if (formData.password && formData.password.length < 8) {
+        newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+      }
+
+      if (formData.password && formData.password !== formData.password2) {
+        newErrors.password2 = 'Las contraseñas no coinciden';
+      }
     }
 
     setErrors(newErrors);
@@ -159,12 +174,19 @@ export default function UsuarioForm({
       };
     } else {
       submitData = {
+        dni: formData.dni,
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
         telefono: formData.telefono || undefined,
         direccion: formData.direccion || undefined,
         is_active: formData.is_active,
+        rol: formData.rol,
+        // Solo incluir contraseña si se proporcionó
+        ...(formData.password && {
+          password: formData.password,
+          password2: formData.password2,
+        }),
       };
     }
 
@@ -187,24 +209,27 @@ export default function UsuarioForm({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* DNI - Solo en modo crear */}
-          {mode === 'create' && (
-            <div className="space-y-2">
-              <Label htmlFor="dni">DNI *</Label>
-              <Input
-                id="dni"
-                type="text"
-                value={formData.dni}
-                onChange={(e) => handleInputChange('dni', e.target.value)}
-                placeholder="12345678"
-                maxLength={8}
-                className={errors.dni ? 'border-destructive' : ''}
-              />
-              {errors.dni && (
-                <p className="text-sm text-destructive">{errors.dni}</p>
-              )}
-            </div>
-          )}
+          {/* DNI */}
+          <div className="space-y-2">
+            <Label htmlFor="dni">DNI *</Label>
+            <Input
+              id="dni"
+              type="text"
+              value={formData.dni}
+              onChange={(e) => handleInputChange('dni', e.target.value)}
+              placeholder="12345678"
+              maxLength={8}
+              className={errors.dni ? 'border-destructive' : ''}
+            />
+            {mode === 'edit' && (
+              <p className="text-xs text-muted-foreground">
+                ⚠️ Cambiar el DNI puede afectar el acceso del usuario al sistema
+              </p>
+            )}
+            {errors.dni && (
+              <p className="text-sm text-destructive">{errors.dni}</p>
+            )}
+          </div>
 
           {/* Nombre */}
           <div className="grid grid-cols-2 gap-4">
@@ -255,64 +280,69 @@ export default function UsuarioForm({
             )}
           </div>
 
-          {/* Contraseñas - Solo en modo crear */}
-          {mode === 'create' && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña *</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
-                  placeholder="••••••••"
-                  className={errors.password ? 'border-destructive' : ''}
-                />
-                {errors.password && (
-                  <p className="text-sm text-destructive">{errors.password}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="password2">Confirmar Contraseña *</Label>
-                <Input
-                  id="password2"
-                  type="password"
-                  value={formData.password2}
-                  onChange={(e) => handleInputChange('password2', e.target.value)}
-                  placeholder="••••••••"
-                  className={errors.password2 ? 'border-destructive' : ''}
-                />
-                {errors.password2 && (
-                  <p className="text-sm text-destructive">{errors.password2}</p>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Rol - Solo en modo crear */}
-          {mode === 'create' && (
+          {/* Contraseñas */}
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="rol">Rol *</Label>
-              <Select
-                value={formData.rol}
-                onValueChange={(value) => handleInputChange('rol', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar rol" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Paciente">Paciente</SelectItem>
-                  <SelectItem value="Doctor">Doctor</SelectItem>
-                  <SelectItem value="Recepcionista">Recepcionista</SelectItem>
-                  <SelectItem value="Administrador">Administrador</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.rol && (
-                <p className="text-sm text-destructive">{errors.rol}</p>
+              <Label htmlFor="password">
+                {mode === 'create' ? 'Contraseña *' : 'Nueva Contraseña'}
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                placeholder="••••••••"
+                className={errors.password ? 'border-destructive' : ''}
+              />
+              {mode === 'edit' && (
+                <p className="text-xs text-muted-foreground">
+                  Déjalo vacío para mantener la contraseña actual
+                </p>
+              )}
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password}</p>
               )}
             </div>
-          )}
+
+            <div className="space-y-2">
+              <Label htmlFor="password2">
+                {mode === 'create' ? 'Confirmar Contraseña *' : 'Confirmar Nueva Contraseña'}
+              </Label>
+              <Input
+                id="password2"
+                type="password"
+                value={formData.password2}
+                onChange={(e) => handleInputChange('password2', e.target.value)}
+                placeholder="••••••••"
+                className={errors.password2 ? 'border-destructive' : ''}
+              />
+              {errors.password2 && (
+                <p className="text-sm text-destructive">{errors.password2}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Rol - Disponible en crear y editar */}
+          <div className="space-y-2">
+            <Label htmlFor="rol">Rol *</Label>
+            <Select
+              value={formData.rol}
+              onValueChange={(value) => handleInputChange('rol', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Paciente">Paciente</SelectItem>
+                <SelectItem value="Doctor">Doctor</SelectItem>
+                <SelectItem value="Recepcionista">Recepcionista</SelectItem>
+                <SelectItem value="Administrador">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.rol && (
+              <p className="text-sm text-destructive">{errors.rol}</p>
+            )}
+          </div>
 
           {/* Teléfono */}
           <div className="space-y-2">
@@ -340,13 +370,20 @@ export default function UsuarioForm({
 
           {/* Estado activo - Solo en modo editar */}
           {mode === 'edit' && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-between p-3 bg-background border rounded-lg">
+              <div className="space-y-1">
+                <Label htmlFor="is_active" className="text-sm font-medium">
+                  Estado del Usuario
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  {formData.is_active ? 'El usuario puede acceder al sistema' : 'El usuario está deshabilitado'}
+                </p>
+              </div>
               <Switch
                 id="is_active"
                 checked={formData.is_active}
                 onCheckedChange={(checked) => handleInputChange('is_active', checked)}
               />
-              <Label htmlFor="is_active">Usuario activo</Label>
             </div>
           )}
 

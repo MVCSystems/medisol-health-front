@@ -36,14 +36,13 @@ export function DeleteConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <div>
-              Esta acción eliminará permanentemente la especialidad{' '}
-              <span className="font-semibold">{especialidadName}</span>.
-            </div>
-            <div className="text-red-600">
+          <AlertDialogDescription>
+            Esta acción eliminará permanentemente la especialidad{' '}
+            <span className="font-semibold">{especialidadName}</span>.
+            <br />
+            <span className="text-destructive">
               Esta acción no se puede deshacer y también afectará a todos los doctores asociados a esta especialidad.
-            </div>
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

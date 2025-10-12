@@ -36,14 +36,11 @@ export default function DeleteConfirmDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <div>
-              Esta acción eliminará permanentemente al usuario{' '}
-              <span className="font-semibold">{userName}</span> (DNI: {usuario.dni}).
-            </div>
-            <div className="text-destructive">
-              Esta acción no se puede deshacer.
-            </div>
+          <AlertDialogDescription>
+            Esta acción eliminará permanentemente al usuario{' '}
+            <span className="font-semibold">{userName}</span> (DNI: {usuario.dni}).
+            <br />
+            <span className="text-destructive">Esta acción no se puede deshacer.</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

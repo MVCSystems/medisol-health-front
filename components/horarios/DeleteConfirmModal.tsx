@@ -37,19 +37,22 @@ export default function DeleteConfirmModal({
             <Trash2 className="h-5 w-5" />
             Confirmar Eliminación
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            <p>¿Estás seguro de que deseas eliminar este horario?</p>
+          <AlertDialogDescription>
+            ¿Estás seguro de que deseas eliminar este horario?
             {horarioInfo && (
-              <div className="bg-gray-50 p-3 rounded-md border">
-                <p className="font-medium">{horarioInfo.dia}</p>
-                <p className="text-sm text-gray-600">
+              <>
+                <br /><br />
+                <span className="font-medium">{horarioInfo.dia}</span>
+                <br />
+                <span className="text-muted-foreground">
                   {formatearHora(horarioInfo.hora_inicio)} - {formatearHora(horarioInfo.hora_fin)}
-                </p>
-              </div>
+                </span>
+              </>
             )}
-            <p className="text-sm text-red-600 font-medium">
+            <br /><br />
+            <span className="text-destructive font-medium">
               Esta acción no se puede deshacer. También se eliminarán todos los slots de disponibilidad asociados.
-            </p>
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

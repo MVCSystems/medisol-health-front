@@ -52,43 +52,44 @@ export function PacienteDeleteDialog({
             <Trash2 className="h-5 w-5 text-destructive" />
             ¿Eliminar Paciente?
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <div>
-              Esta acción eliminará permanentemente al paciente{' '}
-              <span className="font-semibold">{pacienteName}</span>
-              {paciente.usuario_data?.dni && (
-                <span> (DNI: {paciente.usuario_data.dni})</span>
-              )}
-            </div>
+          <AlertDialogDescription>
+            Esta acción eliminará permanentemente al paciente{' '}
+            <span className="font-semibold">{pacienteName}</span>
+            {paciente.usuario_data?.dni && (
+              <span> (DNI: {paciente.usuario_data.dni})</span>
+            )}
             
             {paciente.fecha_nacimiento && (
-              <div className="text-sm text-muted-foreground">
-                Edad: {calcularEdad(paciente.fecha_nacimiento)} años
-              </div>
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Edad: {calcularEdad(paciente.fecha_nacimiento)} años
+                </span>
+              </>
             )}
 
             {paciente.numero_documento && (
-              <div className="text-sm text-muted-foreground">
-                Documento: {paciente.tipo_documento} {paciente.numero_documento}
-              </div>
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Documento: {paciente.tipo_documento} {paciente.numero_documento}
+                </span>
+              </>
             )}
 
             {paciente.celular && (
-              <div className="text-sm text-muted-foreground">
-                Contacto: {paciente.celular}
-              </div>
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Contacto: {paciente.celular}
+                </span>
+              </>
             )}
 
-            <div className="text-destructive font-medium">
-              ⚠️ Esta acción no se puede deshacer y eliminará:
-            </div>
-            <ul className="text-sm text-destructive list-disc list-inside space-y-1">
-              <li>El perfil del paciente</li>
-              <li>Su usuario asociado en el sistema</li>
-              <li>Todos los roles y permisos</li>
-              <li>El historial médico (si existe)</li>
-              <li>Las citas programadas y pasadas</li>
-            </ul>
+            <br /><br />
+            <span className="text-destructive font-medium">
+              ⚠️ Esta acción no se puede deshacer y eliminará: El perfil del paciente, su usuario asociado, todos los roles y permisos, el historial médico (si existe) y las citas programadas y pasadas.
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
