@@ -164,15 +164,15 @@ export default function ReservaCitaModal({
         </DialogHeader>
 
         {/* Resumen de la cita */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-          <h3 className="font-medium text-gray-900">Resumen de la cita</h3>
+        <div className="bg-muted/50 rounded-lg p-4 space-y-3 border border-border">
+          <h3 className="font-medium text-foreground">Resumen de la cita</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
-              <User className="h-4 w-4 text-gray-500" />
+              <User className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="font-medium">{doctor.nombres} {doctor.apellidos}</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-foreground">{doctor.nombres} {doctor.apellidos}</p>
+                <p className="text-sm text-muted-foreground">
                   {doctor.especialidades_data && doctor.especialidades_data.length > 0 
                     ? doctor.especialidades_data[0].nombre 
                     : 'Medicina General'
@@ -182,28 +182,28 @@ export default function ReservaCitaModal({
             </div>
             
             <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-gray-500" />
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="font-medium">S/ {doctor.precio_consulta_base}</p>
-                <p className="text-sm text-gray-600">Consulta</p>
+                <p className="font-medium text-foreground">S/ {doctor.precio_consulta_base}</p>
+                <p className="text-sm text-muted-foreground">Consulta</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4 text-gray-500" />
+              <CalendarDays className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="font-medium">{formatearFecha(slot.fecha)}</p>
-                <p className="text-sm text-gray-600">Fecha</p>
+                <p className="font-medium text-foreground">{formatearFecha(slot.fecha)}</p>
+                <p className="text-sm text-muted-foreground">Fecha</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-gray-500" />
+              <Clock className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="font-medium">
+                <p className="font-medium text-foreground">
                   {formatearHora(slot.hora_inicio)} - {formatearHora(slot.hora_fin)}
                 </p>
-                <p className="text-sm text-gray-600">Horario</p>
+                <p className="text-sm text-muted-foreground">Horario</p>
               </div>
             </div>
           </div>
@@ -219,10 +219,10 @@ export default function ReservaCitaModal({
                 value={formData.paciente_nombre}
                 onChange={(e) => handleInputChange('paciente_nombre', e.target.value)}
                 placeholder="Ingrese sus nombres"
-                className={errors.paciente_nombre ? 'border-red-500' : ''}
+                className={errors.paciente_nombre ? 'border-destructive' : ''}
               />
               {errors.paciente_nombre && (
-                <p className="text-sm text-red-500">{errors.paciente_nombre}</p>
+                <p className="text-sm text-destructive">{errors.paciente_nombre}</p>
               )}
             </div>
 
@@ -233,10 +233,10 @@ export default function ReservaCitaModal({
                 value={formData.paciente_apellido}
                 onChange={(e) => handleInputChange('paciente_apellido', e.target.value)}
                 placeholder="Ingrese sus apellidos"
-                className={errors.paciente_apellido ? 'border-red-500' : ''}
+                className={errors.paciente_apellido ? 'border-destructive' : ''}
               />
               {errors.paciente_apellido && (
-                <p className="text-sm text-red-500">{errors.paciente_apellido}</p>
+                <p className="text-sm text-destructive">{errors.paciente_apellido}</p>
               )}
             </div>
           </div>
@@ -250,10 +250,10 @@ export default function ReservaCitaModal({
                 onChange={(e) => handleInputChange('paciente_dni', e.target.value)}
                 placeholder="12345678"
                 maxLength={8}
-                className={errors.paciente_dni ? 'border-red-500' : ''}
+                className={errors.paciente_dni ? 'border-destructive' : ''}
               />
               {errors.paciente_dni && (
-                <p className="text-sm text-red-500">{errors.paciente_dni}</p>
+                <p className="text-sm text-destructive">{errors.paciente_dni}</p>
               )}
             </div>
 
@@ -264,10 +264,10 @@ export default function ReservaCitaModal({
                 value={formData.paciente_telefono}
                 onChange={(e) => handleInputChange('paciente_telefono', e.target.value)}
                 placeholder="987654321"
-                className={errors.paciente_telefono ? 'border-red-500' : ''}
+                className={errors.paciente_telefono ? 'border-destructive' : ''}
               />
               {errors.paciente_telefono && (
-                <p className="text-sm text-red-500">{errors.paciente_telefono}</p>
+                <p className="text-sm text-destructive">{errors.paciente_telefono}</p>
               )}
             </div>
           </div>
@@ -280,10 +280,10 @@ export default function ReservaCitaModal({
               value={formData.paciente_email}
               onChange={(e) => handleInputChange('paciente_email', e.target.value)}
               placeholder="ejemplo@correo.com"
-              className={errors.paciente_email ? 'border-red-500' : ''}
+              className={errors.paciente_email ? 'border-destructive' : ''}
             />
             {errors.paciente_email && (
-              <p className="text-sm text-red-500">{errors.paciente_email}</p>
+              <p className="text-sm text-destructive">{errors.paciente_email}</p>
             )}
           </div>
 
@@ -312,10 +312,10 @@ export default function ReservaCitaModal({
               onChange={(e) => handleInputChange('motivo_consulta', e.target.value)}
               placeholder="Describa brevemente el motivo de su consulta"
               rows={3}
-              className={errors.motivo_consulta ? 'border-red-500' : ''}
+              className={errors.motivo_consulta ? 'border-destructive' : ''}
             />
             {errors.motivo_consulta && (
-              <p className="text-sm text-red-500">{errors.motivo_consulta}</p>
+              <p className="text-sm text-destructive">{errors.motivo_consulta}</p>
             )}
           </div>
 

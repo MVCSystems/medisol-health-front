@@ -10,14 +10,14 @@ export default function RegisterForm({ onClose }: { onClose: () => void }) {
   const [showRepeatPassword, setShowRepeatPassword] = useState(false)
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-gray-200 dark:border-slate-700 relative">
+    <div className="bg-card rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-border relative">
       <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700" aria-label="Cerrar registro"><X className="w-5 h-5" /></button>
-      <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-200 mb-6 text-center">Registro de Usuario</h2>
+      <h2 className="text-2xl font-bold text-primary mb-6 text-center">Registro de Usuario</h2>
       <form className="space-y-4" onSubmit={e => {e.preventDefault(); onClose();}}>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="tipoDoc">Tipo Doc</Label>
-            <select id="tipoDoc" className="w-full h-10 rounded-lg border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white focus:border-blue-600 dark:focus:border-blue-400">
+            <select id="tipoDoc" className="w-full h-10 rounded-lg border-border bg-background text-foreground focus:border-primary">
               <option value="dni">DNI</option>
               <option value="ce">Carnet de Extranjería</option>
               <option value="pasaporte">Pasaporte</option>
@@ -80,7 +80,7 @@ export default function RegisterForm({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold text-base rounded-lg shadow-md hover:shadow-lg transition-all">Registrar</Button>
+        <Button type="submit" className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base rounded-lg shadow-md hover:shadow-lg transition-all">Registrar</Button>
       </form>
     </div>
   )

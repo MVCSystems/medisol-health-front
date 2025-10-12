@@ -295,12 +295,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
         <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-slate-700">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2"><HelpCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />Ayuda de Accesibilidad</h3>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-primary-foreground flex items-center gap-2"><HelpCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />Ayuda de Accesibilidad</h3>
               <button onClick={() => setShowAccessibilityHelp(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700" aria-label="Cerrar ayuda de accesibilidad"><X className="w-5 h-5" /></button>
             </div>
             <div className="space-y-4 text-sm">
               <div>
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Navegación por teclado:</h4>
+                <h4 className="font-semibold text-foreground mb-2">Navegación por teclado:</h4>
                 <ul className="space-y-1 text-gray-600 dark:text-gray-300">
                   <li>• <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-700 dark:text-gray-300 rounded text-xs font-mono">Tab</kbd> - Navegar entre campos</li>
                   <li>• <kbd className="px-2 py-1 bg-gray-100 dark:bg-slate-700 dark:text-gray-300 rounded text-xs font-mono">Enter</kbd> - Activar botones</li>
@@ -309,7 +309,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Opciones de accesibilidad:</h4>
+                <h4 className="font-semibold text-foreground mb-2">Opciones de accesibilidad:</h4>
                 <ul className="space-y-1 text-gray-600 dark:text-gray-300 text-xs">
                   <li>• Modo alto contraste para mejor visibilidad</li>
                   <li>• Ajuste de tamaño de fuente (+ / -)</li>
@@ -323,13 +323,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
                 </ul>
               </div>
               <div className="border-t border-gray-200 dark:border-slate-600 pt-3">
-                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Soporte técnico:</h4>
+                <h4 className="font-semibold text-foreground mb-1">Soporte técnico:</h4>
                 <p className="text-gray-600 dark:text-gray-300 text-xs">Para asistencia adicional, contacte al departamento de TI</p>
                 <p className="text-blue-600 dark:text-blue-400 font-medium text-sm mt-1">📞 (01) 234-5678</p>
               </div>
             </div>
             <div className="mt-6 flex justify-end">
-              <button onClick={() => setShowAccessibilityHelp(false)} className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors font-medium">Entendido</button>
+              <button onClick={() => setShowAccessibilityHelp(false)} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium">Entendido</button>
             </div>
           </div>
         </div>

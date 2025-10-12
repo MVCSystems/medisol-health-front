@@ -198,10 +198,10 @@ export default function UsuarioForm({
                 onChange={(e) => handleInputChange('dni', e.target.value)}
                 placeholder="12345678"
                 maxLength={8}
-                className={errors.dni ? 'border-red-500' : ''}
+                className={errors.dni ? 'border-destructive' : ''}
               />
               {errors.dni && (
-                <p className="text-sm text-red-600">{errors.dni}</p>
+                <p className="text-sm text-destructive">{errors.dni}</p>
               )}
             </div>
           )}
@@ -216,10 +216,10 @@ export default function UsuarioForm({
                 value={formData.first_name}
                 onChange={(e) => handleInputChange('first_name', e.target.value)}
                 placeholder="Juan"
-                className={errors.first_name ? 'border-red-500' : ''}
+                className={errors.first_name ? 'border-destructive' : ''}
               />
               {errors.first_name && (
-                <p className="text-sm text-red-600">{errors.first_name}</p>
+                <p className="text-sm text-destructive">{errors.first_name}</p>
               )}
             </div>
 
@@ -231,10 +231,10 @@ export default function UsuarioForm({
                 value={formData.last_name}
                 onChange={(e) => handleInputChange('last_name', e.target.value)}
                 placeholder="Pérez"
-                className={errors.last_name ? 'border-red-500' : ''}
+                className={errors.last_name ? 'border-destructive' : ''}
               />
               {errors.last_name && (
-                <p className="text-sm text-red-600">{errors.last_name}</p>
+                <p className="text-sm text-destructive">{errors.last_name}</p>
               )}
             </div>
           </div>
@@ -248,10 +248,10 @@ export default function UsuarioForm({
               value={formData.email}
               onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="juan@ejemplo.com"
-              className={errors.email ? 'border-red-500' : ''}
+              className={errors.email ? 'border-destructive' : ''}
             />
             {errors.email && (
-              <p className="text-sm text-red-600">{errors.email}</p>
+              <p className="text-sm text-destructive">{errors.email}</p>
             )}
           </div>
 
@@ -266,10 +266,10 @@ export default function UsuarioForm({
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="••••••••"
-                  className={errors.password ? 'border-red-500' : ''}
+                  className={errors.password ? 'border-destructive' : ''}
                 />
                 {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password}</p>
+                  <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
 
@@ -281,10 +281,10 @@ export default function UsuarioForm({
                   value={formData.password2}
                   onChange={(e) => handleInputChange('password2', e.target.value)}
                   placeholder="••••••••"
-                  className={errors.password2 ? 'border-red-500' : ''}
+                  className={errors.password2 ? 'border-destructive' : ''}
                 />
                 {errors.password2 && (
-                  <p className="text-sm text-red-600">{errors.password2}</p>
+                  <p className="text-sm text-destructive">{errors.password2}</p>
                 )}
               </div>
             </div>
@@ -309,7 +309,7 @@ export default function UsuarioForm({
                 </SelectContent>
               </Select>
               {errors.rol && (
-                <p className="text-sm text-red-600">{errors.rol}</p>
+                <p className="text-sm text-destructive">{errors.rol}</p>
               )}
             </div>
           )}

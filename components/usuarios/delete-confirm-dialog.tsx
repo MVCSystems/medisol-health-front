@@ -41,7 +41,7 @@ export default function DeleteConfirmDialog({
               Esta acción eliminará permanentemente al usuario{' '}
               <span className="font-semibold">{userName}</span> (DNI: {usuario.dni}).
             </div>
-            <div className="text-red-600">
+            <div className="text-destructive">
               Esta acción no se puede deshacer.
             </div>
           </AlertDialogDescription>
@@ -53,7 +53,7 @@ export default function DeleteConfirmDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            className="bg-destructive hover:bg-destructive/90 focus:ring-destructive"
           >
             {isLoading ? 'Eliminando...' : 'Eliminar Usuario'}
           </AlertDialogAction>

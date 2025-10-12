@@ -172,7 +172,7 @@ export function PacienteEditForm({ paciente, onSuccess, onCancel }: PacienteEdit
                   onChange={handleInputChange}
                   placeholder="María José"
                 />
-                {errors.nombres && <p className="text-sm text-red-500">{errors.nombres}</p>}
+                {errors.nombres && <p className="text-sm text-destructive">{errors.nombres}</p>}
               </div>
 
               <div>
@@ -184,7 +184,7 @@ export function PacienteEditForm({ paciente, onSuccess, onCancel }: PacienteEdit
                   onChange={handleInputChange}
                   placeholder="García"
                 />
-                {errors.apellido_paterno && <p className="text-sm text-red-500">{errors.apellido_paterno}</p>}
+                {errors.apellido_paterno && <p className="text-sm text-destructive">{errors.apellido_paterno}</p>}
               </div>
 
               <div>
@@ -207,7 +207,7 @@ export function PacienteEditForm({ paciente, onSuccess, onCancel }: PacienteEdit
                   value={formData.fecha_nacimiento}
                   onChange={handleInputChange}
                 />
-                {errors.fecha_nacimiento && <p className="text-sm text-red-500">{errors.fecha_nacimiento}</p>}
+                {errors.fecha_nacimiento && <p className="text-sm text-destructive">{errors.fecha_nacimiento}</p>}
               </div>
 
               <div>
@@ -252,7 +252,7 @@ export function PacienteEditForm({ paciente, onSuccess, onCancel }: PacienteEdit
                   onChange={handleInputChange}
                   placeholder="Número del documento"
                 />
-                {errors.numero_documento && <p className="text-sm text-red-500">{errors.numero_documento}</p>}
+                {errors.numero_documento && <p className="text-sm text-destructive">{errors.numero_documento}</p>}
               </div>
 
               <div>

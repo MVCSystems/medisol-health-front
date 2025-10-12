@@ -42,15 +42,15 @@ export default function UsuarioCard({ usuario, onEdit, onDelete, onView, onToggl
   const getRoleBadgeColor = (rolNombre: string) => {
     switch (rolNombre) {
       case 'Administrador':
-        return 'bg-red-100 text-red-800 hover:bg-red-200'
+        return 'bg-destructive/10 text-destructive hover:bg-destructive/20'
       case 'Doctor':
-        return 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+        return 'bg-primary/10 text-primary hover:bg-primary/20'
       case 'Paciente':
-        return 'bg-green-100 text-green-800 hover:bg-green-200'
+        return 'bg-secondary/10 text-secondary-foreground hover:bg-secondary/20'
       case 'Recepcionista':
         return 'bg-purple-100 text-purple-800 hover:bg-purple-200'
       default:
-        return 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+        return 'bg-muted text-muted-foreground hover:bg-muted/80'
     }
   }
 
@@ -117,7 +117,7 @@ export default function UsuarioCard({ usuario, onEdit, onDelete, onView, onToggl
                       </>
                     ) : (
                       <>
-                        <span className="h-4 w-4 mr-2 text-green-500">▶</span>
+                        <span className="h-4 w-4 mr-2 text-secondary">▶</span>
                         Activar
                       </>
                     )}

@@ -98,7 +98,7 @@ export default function Header() {
       {mobileNav && (
         <div className="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex flex-col">
           <button
-            className="self-end m-4 text-white hover:text-gray-200 text-2xl"
+            className="self-end m-4 text-primary-foreground hover:text-primary-foreground/80 text-2xl"
             onClick={() => setMobileNav(false)}
             aria-label="Cerrar menú"
           >
@@ -109,7 +109,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-4 py-3 rounded-lg flex items-center text-white hover:bg-white/10 hover:text-gray-100 font-medium text-xl transition-colors"
+                className="px-4 py-3 rounded-lg flex items-center text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground/80 font-medium text-xl transition-colors"
                 onClick={() => setMobileNav(false)}
               >
                 {link.icon}

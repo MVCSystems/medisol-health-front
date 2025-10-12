@@ -49,7 +49,7 @@ export function PacienteDeleteDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Trash2 className="h-5 w-5 text-red-600" />
+            <Trash2 className="h-5 w-5 text-destructive" />
             ¿Eliminar Paciente?
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
@@ -79,10 +79,10 @@ export function PacienteDeleteDialog({
               </div>
             )}
 
-            <div className="text-red-600 font-medium">
+            <div className="text-destructive font-medium">
               ⚠️ Esta acción no se puede deshacer y eliminará:
             </div>
-            <ul className="text-sm text-red-600 list-disc list-inside space-y-1">
+            <ul className="text-sm text-destructive list-disc list-inside space-y-1">
               <li>El perfil del paciente</li>
               <li>Su usuario asociado en el sistema</li>
               <li>Todos los roles y permisos</li>
@@ -98,7 +98,7 @@ export function PacienteDeleteDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-destructive hover:bg-destructive/90"
           >
             {isLoading ? (
               <>

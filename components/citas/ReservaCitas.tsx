@@ -110,31 +110,32 @@ export default function ReservaCitas() {
   }, [doctorSeleccionado?.id, fechaSeleccionada, cargarDisponibilidad]);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">Reservar Cita Médica</h1>
-        <p className="text-gray-600">
-          Selecciona un doctor y horario disponible para tu consulta
-        </p>
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-6 space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-bold text-foreground">Reservar Cita Médica</h1>
+          <p className="text-muted-foreground">
+            Selecciona un doctor y horario disponible para tu consulta
+          </p>
+        </div>
 
       {/* Navegación de pasos */}
       <div className="flex items-center justify-center space-x-4">
-        <div className={`flex items-center space-x-2 ${paso === 'doctores' ? 'text-primary' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${paso === 'doctores' ? 'bg-primary text-white' : 'bg-gray-200'}`}>
+        <div className={`flex items-center space-x-2 ${paso === 'doctores' ? 'text-primary' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${paso === 'doctores' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
             1
           </div>
-          <span>Seleccionar Doctor</span>
+          <span className="font-medium">Seleccionar Doctor</span>
         </div>
         
-        <div className="w-8 h-px bg-gray-300"></div>
+        <div className="w-8 h-px bg-border"></div>
         
-        <div className={`flex items-center space-x-2 ${paso === 'horarios' ? 'text-primary' : 'text-gray-400'}`}>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${paso === 'horarios' ? 'bg-primary text-white' : 'bg-gray-200'}`}>
+        <div className={`flex items-center space-x-2 ${paso === 'horarios' ? 'text-primary' : 'text-muted-foreground'}`}>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${paso === 'horarios' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
             2
           </div>
-          <span>Elegir Horario</span>
+          <span className="font-medium">Elegir Horario</span>
         </div>
       </div>
 
@@ -143,7 +144,7 @@ export default function ReservaCitas() {
         <div className="space-y-6">
           {/* Buscador */}
           <div className="relative max-w-md mx-auto">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Buscar doctor o especialidad..."
@@ -163,7 +164,7 @@ export default function ReservaCitas() {
               {doctoresFiltrados.map((doctor) => (
                 <Card 
                   key={doctor.id} 
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  className="hover:shadow-lg transition-shadow cursor-pointer border-border bg-card"
                   onClick={() => handleSeleccionarDoctor(doctor)}
                 >
                   <CardHeader>
@@ -172,10 +173,10 @@ export default function ReservaCitas() {
                         <User className="h-6 w-6 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg">
+                        <CardTitle className="text-lg text-card-foreground">
                           {doctor.nombres} {doctor.apellidos}
                         </CardTitle>
-                        <p className="text-sm text-gray-600">{doctor.titulo}</p>
+                        <p className="text-sm text-muted-foreground">{doctor.titulo}</p>
                       </div>
                     </div>
                   </CardHeader>
@@ -192,25 +193,25 @@ export default function ReservaCitas() {
 
                     {/* Información de contacto */}
                     <div className="space-y-2 text-sm">
-                      <div className="flex items-center space-x-2 text-gray-600">
+                      <div className="flex items-center space-x-2 text-muted-foreground">
                         <Phone className="h-4 w-4" />
                         <span>{doctor.usuario_data?.telefono || 'No disponible'}</span>
                       </div>
-                      <div className="flex items-center space-x-2 text-gray-600">
+                      <div className="flex items-center space-x-2 text-muted-foreground">
                         <Mail className="h-4 w-4" />
                         <span>{doctor.usuario_data?.email || 'No disponible'}</span>
                       </div>
-                      <div className="flex items-center space-x-2 text-gray-600">
+                      <div className="flex items-center space-x-2 text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         <span>{doctor.clinica_nombre}</span>
                       </div>
                     </div>
 
                     {/* Precio */}
-                    <div className="flex items-center justify-between pt-4 border-t">
+                    <div className="flex items-center justify-between pt-4 border-t border-border">
                       <div className="flex items-center space-x-2">
-                        <DollarSign className="h-4 w-4 text-green-600" />
-                        <span className="font-semibold text-lg">
+                        <DollarSign className="h-4 w-4 text-secondary" />
+                        <span className="font-semibold text-lg text-foreground">
                           S/ {doctor.precio_consulta_base}
                         </span>
                       </div>
@@ -226,7 +227,7 @@ export default function ReservaCitas() {
 
           {doctoresFiltrados.length === 0 && !loadingDoctores && (
             <div className="text-center py-12">
-              <p className="text-gray-500">No se encontraron doctores</p>
+              <p className="text-muted-foreground">No se encontraron doctores</p>
             </div>
           )}
         </div>
@@ -235,7 +236,7 @@ export default function ReservaCitas() {
       {paso === 'horarios' && doctorSeleccionado && (
         <div className="space-y-6">
           {/* Header del doctor seleccionado */}
-          <Card>
+          <Card className="border-border bg-card">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -243,7 +244,7 @@ export default function ReservaCitas() {
                     <User className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg">
+                    <h3 className="font-semibold text-lg text-card-foreground">
                       {doctorSeleccionado.nombres} {doctorSeleccionado.apellidos}
                     </h3>
                     <div className="flex flex-wrap gap-2 mt-1">
@@ -295,6 +296,7 @@ export default function ReservaCitas() {
           loading={loadingCita}
         />
       )}
+      </div>
     </div>
   );
 }

@@ -105,7 +105,7 @@ export default function DisponibilidadCalendar({
     <div className="space-y-6">
       {/* Navegación del calendario */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-lg font-semibold text-foreground">
           {meses[mesActual.getMonth()]} {mesActual.getFullYear()}
         </h3>
         <div className="flex gap-2">
@@ -131,7 +131,7 @@ export default function DisponibilidadCalendar({
         <CardContent className="p-4">
           <div className="grid grid-cols-7 gap-1 mb-4">
             {diasSemana.map(dia => (
-              <div key={dia} className="p-2 text-center text-sm font-medium text-gray-500">
+              <div key={dia} className="p-2 text-center text-sm font-medium text-muted-foreground">
                 {dia}
               </div>
             ))}
@@ -148,13 +148,12 @@ export default function DisponibilidadCalendar({
                 <button
                   key={index}
                   className={`
-                    p-2 text-sm rounded-lg transition-all relative
-                    ${!esMesActual ? 'text-muted-foreground/50' : 'text-foreground'}
-                    ${esPasada ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    ${esSeleccionada ? 'bg-primary text-primary-foreground shadow-lg' : ''}
-                    ${esDisponible && !esSeleccionada ? 'bg-secondary/20 border-2 border-secondary' : ''}
-                    ${!esDisponible && !esPasada && esMesActual ? 'bg-muted' : ''}
-                    hover:bg-accent hover:text-accent-foreground
+                    p-2 text-sm rounded-lg transition-all relative border
+                    ${!esMesActual ? 'text-muted-foreground/50 border-transparent' : 'text-foreground border-transparent'}
+                    ${esPasada ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-accent hover:text-accent-foreground hover:border-border'}
+                    ${esSeleccionada ? 'bg-primary text-primary-foreground shadow-lg border-primary' : ''}
+                    ${esDisponible && !esSeleccionada ? 'bg-secondary/20 text-foreground border-secondary/50' : ''}
+                    ${!esDisponible && !esPasada && esMesActual ? 'bg-muted text-muted-foreground' : ''}
                   `}
                   disabled={esPasada || !esMesActual}
                   onClick={() => {
@@ -179,8 +178,8 @@ export default function DisponibilidadCalendar({
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-4 w-4" />
-              <h4 className="font-medium">
+              <Clock className="h-4 w-4 text-primary" />
+              <h4 className="font-medium text-foreground">
                 Horarios disponibles - {new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString('es-ES', {
                   weekday: 'long',
                   year: 'numeric',
@@ -199,9 +198,12 @@ export default function DisponibilidadCalendar({
               </div>
             ) : slotsDelDia.length === 0 ? (
               <div className="text-center py-8">
-                <div className="bg-muted border border-border rounded-lg p-4">
-                  <p className="text-foreground font-medium">No hay horarios disponibles</p>
-                  <p className="text-muted-foreground text-sm mt-1">
+                <div className="bg-muted/50 border border-border rounded-lg p-4 backdrop-blur-sm">
+                  <div className="flex items-center justify-center mb-2">
+                    <Clock className="h-8 w-8 text-muted-foreground/50" />
+                  </div>
+                  <p className="text-foreground font-medium mb-1">No hay horarios disponibles</p>
+                  <p className="text-muted-foreground text-sm">
                     El doctor no tiene horarios configurados para esta fecha o todos los slots están ocupados.
                   </p>
                 </div>
@@ -213,10 +215,10 @@ export default function DisponibilidadCalendar({
                     key={slot.id}
                     variant="outline"
                     size="sm"
-                    className="h-auto p-3 flex flex-col items-center gap-1 border-secondary hover:bg-secondary hover:text-secondary-foreground transition-colors"
+                    className="h-auto p-3 flex flex-col items-center gap-1 border-border bg-card text-card-foreground hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-all duration-200"
                     onClick={() => onSlotSeleccionado(slot)}
                   >
-                    <span className="font-medium">
+                    <span className="font-medium text-foreground">
                       {formatearHora(slot.hora_inicio)}
                     </span>
                     <span className="text-xs text-muted-foreground">

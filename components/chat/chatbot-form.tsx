@@ -276,10 +276,10 @@ export default function ChatbotPage() {
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="relative">
               <div className="w-16 h-16 bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent rounded-2xl flex items-center justify-center shadow-lg animate-pulse-glow">
-                <Bot className="w-8 h-8 text-white drop-shadow" />
+                <Bot className="w-8 h-8 text-primary-foreground drop-shadow" />
               </div>
               <div className="absolute -top-2 -right-2 w-7 h-7 bg-secondary dark:bg-secondary/80 rounded-full flex items-center justify-center shadow animate-bounce">
-                <Sparkles className="w-4 h-4 text-white" />
+                <Sparkles className="w-4 h-4 text-primary-foreground" />
               </div>
             </div>
           </div>
@@ -292,18 +292,18 @@ export default function ChatbotPage() {
         </div>
 
         {/* Chat Container */}
-        <Card className="border-none shadow-2xl overflow-hidden rounded-3xl bg-card dark:bg-gray-900 dark:shadow-gray-800 transition-colors duration-300">
+        <Card className="border-none shadow-2xl overflow-hidden rounded-3xl bg-card dark:bg-background dark:shadow-gray-800 transition-colors duration-300">
           {/* Chat Header */}
-          <div className="bg-primary dark:bg-gradient-to-r dark:from-primary dark:to-accent p-5 text-white rounded-t-3xl shadow-md">
+          <div className="bg-primary dark:bg-gradient-to-r dark:from-primary dark:to-accent p-5 text-primary-foreground rounded-t-3xl shadow-md">
             <div className="flex items-center gap-4">
               <Avatar className="w-11 h-11 border-2 border-white/30 shadow">
-                <AvatarFallback className="bg-white/20 dark:bg-gray-800 text-white">
+                <AvatarFallback className="bg-background/20 dark:bg-gray-800 text-primary-foreground">
                   <Bot className="w-5 h-5" />
                 </AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-semibold text-lg">Asistente AI</h3>
-                <div className="text-sm text-white/80 flex items-center gap-2">
+                <div className="text-sm text-primary-foreground/80 flex items-center gap-2">
                   <span
                     className={`w-2 h-2 ${
                       connected ? "bg-green-400" : "bg-red-400"
@@ -318,17 +318,17 @@ export default function ChatbotPage() {
                   type="button"
                   title="Valorar"
                   onClick={handleOpenRating}
-                  className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition"
+                  className="p-2 rounded-full hover:bg-background/20 dark:hover:bg-gray-800 transition"
                 >
-                  <Smile className="w-6 h-6 text-white" />
+                  <Smile className="w-6 h-6 text-primary-foreground" />
                 </button>
                 <button
                   type="button"
                   title="Limpiar chat"
                   onClick={handleClearChat}
-                  className="p-2 rounded-full hover:bg-white/20 dark:hover:bg-gray-800 transition"
+                  className="p-2 rounded-full hover:bg-background/20 dark:hover:bg-gray-800 transition"
                 >
-                  <Trash className="w-5 h-5 text-white/70" />
+                  <Trash className="w-5 h-5 text-primary-foreground/70" />
                 </button>
               </div>
             </div>
@@ -338,7 +338,7 @@ export default function ChatbotPage() {
           <div
             ref={messagesContainerRef}
             onScroll={handleScroll}
-            className="h-96 overflow-y-auto p-6 space-y-5 bg-background dark:bg-gray-900 transition-colors duration-300"
+            className="h-96 overflow-y-auto p-6 space-y-5 bg-background dark:bg-background transition-colors duration-300"
           >
             {messages.map((message) => (
               <div
@@ -353,7 +353,7 @@ export default function ChatbotPage() {
               >
                 {message.sender === "bot" && (
                   <Avatar className="w-8 h-8 mt-1">
-                    <AvatarFallback className="bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent text-white">
+                    <AvatarFallback className="bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent text-primary-foreground">
                       <Bot className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
@@ -362,7 +362,7 @@ export default function ChatbotPage() {
                 <div
                   className={`max-w-xs lg:max-w-md px-5 py-4 rounded-2xl shadow-lg transition-all duration-200 ${
                     message.sender === "user"
-                      ? "bg-primary text-white rounded-br-md"
+                      ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-card dark:bg-gray-800 border border-border dark:border-gray-700 rounded-bl-md"
                   }`}
                 >
@@ -370,7 +370,7 @@ export default function ChatbotPage() {
                   <p
                     className={`text-xs mt-2 ${
                       message.sender === "user"
-                        ? "text-white/70"
+                        ? "text-primary-foreground/70"
                         : "text-muted-foreground dark:text-gray-400"
                     }`}
                   >
@@ -383,7 +383,7 @@ export default function ChatbotPage() {
 
                 {message.sender === "user" && (
                   <Avatar className="w-8 h-8 mt-1">
-                    <AvatarFallback className="bg-secondary dark:bg-secondary/80 text-white">
+                    <AvatarFallback className="bg-secondary dark:bg-secondary/80 text-primary-foreground">
                       <User className="w-4 h-4" />
                     </AvatarFallback>
                   </Avatar>
@@ -402,7 +402,7 @@ export default function ChatbotPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handleSuggestionClick(suggestion)}
-                        className="bg-card dark:bg-gray-800 text-sm text-foreground dark:text-gray-200 hover:bg-primary/20 dark:hover:bg-primary/30 border-accent/30 rounded-xl shadow"
+                        className="bg-card dark:bg-gray-800 text-sm text-foreground dark:text-foreground hover:bg-primary/20 dark:hover:bg-primary/30 border-accent/30 rounded-xl shadow"
                       >
                         {suggestion}
                       </Button>
@@ -413,7 +413,7 @@ export default function ChatbotPage() {
             {isTyping && (
               <div className="flex gap-3 justify-start animate-slide-in-left">
                 <Avatar className="w-8 h-8 mt-1">
-                  <AvatarFallback className="bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent text-white">
+                  <AvatarFallback className="bg-primary dark:bg-gradient-to-br dark:from-primary dark:to-accent text-primary-foreground">
                     <Bot className="w-4 h-4" />
                   </AvatarFallback>
                 </Avatar>
@@ -436,7 +436,7 @@ export default function ChatbotPage() {
           </div>
 
           {/* Input Area */}
-          <div className="p-5 bg-card dark:bg-gray-900/80 backdrop-blur-md border-t border-border dark:border-gray-700 rounded-b-3xl transition-colors duration-300">
+          <div className="p-5 bg-card dark:bg-background/80 backdrop-blur-md border-t border-border dark:border-gray-700 rounded-b-3xl transition-colors duration-300">
             <div className="flex gap-4 items-end">
               <div className="flex-1">
                 <Input
@@ -445,13 +445,13 @@ export default function ChatbotPage() {
                   onKeyPress={handleKeyPress}
                   placeholder="Escribe tu mensaje aquí..."
                   disabled={!connected}
-                  className="border-2 border-border/50 dark:border-gray-700 focus:border-accent dark:focus:border-accent rounded-xl px-5 py-4 text-base resize-none transition-all duration-200 bg-white dark:bg-gray-900 text-black dark:text-gray-200"
+                  className="border-2 border-border/50 dark:border-gray-700 focus:border-accent dark:focus:border-accent rounded-xl px-5 py-4 text-base resize-none transition-all duration-200 bg-background dark:bg-background text-foreground dark:text-foreground"
                 />
               </div>
               <Button
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim() || isTyping || !connected}
-                className="bg-primary hover:bg-primary/90 dark:bg-gradient-to-r dark:from-primary dark:to-accent text-white rounded-xl px-7 py-4 shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 dark:bg-gradient-to-r dark:from-primary dark:to-accent text-primary-foreground rounded-xl px-7 py-4 shadow-lg transition-all duration-200 hover:shadow-xl disabled:opacity-50"
               >
                 <Send className="w-5 h-5" />
               </Button>
@@ -460,8 +460,8 @@ export default function ChatbotPage() {
         </Card>
       </div>
       {showRating && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-gray-950 rounded-3xl shadow-2xl px-10 py-12 w-full max-w-xl relative flex flex-col items-center border border-gray-200 dark:border-gray-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+          <div className="bg-background dark:bg-gray-950 rounded-3xl shadow-2xl px-10 py-12 w-full max-w-xl relative flex flex-col items-center border border-gray-200 dark:border-gray-800">
             <button
               className="absolute top-4 right-6 text-gray-400 hover:text-primary dark:hover:text-accent text-3xl font-bold transition"
               onClick={handleCloseRating}
@@ -481,8 +481,8 @@ export default function ChatbotPage() {
                       onClick={() => handleSelectScore(score)}
                       className={`px-3 py-2 rounded-full border font-bold text-base focus:outline-none transition-all duration-150 min-w-[2.2rem] shadow-sm ${
                         selectedScore === score
-                          ? "bg-primary text-white scale-110 shadow-lg border-primary"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-700 hover:bg-primary/10 dark:hover:bg-primary/20"
+                          ? "bg-primary text-primary-foreground scale-110 shadow-lg border-primary"
+                          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-foreground border-gray-300 dark:border-gray-700 hover:bg-primary/10 dark:hover:bg-primary/20"
                       }`}
                       style={{ boxShadow: selectedScore === score ? "0 2px 8px rgba(0,0,0,0.12)" : undefined }}
                     >
@@ -504,11 +504,11 @@ export default function ChatbotPage() {
                 <textarea
                   value={ratingComment}
                   onChange={(e) => setRatingComment(e.target.value)}
-                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-800 text-black dark:text-white text-lg focus:ring-2 focus:ring-primary/40"
+                  className="w-full p-3 rounded-xl border bg-gray-50 dark:bg-gray-800 text-foreground dark:text-primary-foreground text-lg focus:ring-2 focus:ring-primary/40"
                   rows={4}
                   placeholder="Escribe tu comentario..."
                 />
-                <Button onClick={handleSendRating} className="w-full text-lg py-3 bg-primary text-white rounded-xl shadow-md hover:bg-primary/90">
+                <Button onClick={handleSendRating} className="w-full text-lg py-3 bg-primary text-primary-foreground rounded-xl shadow-md hover:bg-primary/90">
                   Enviar
                 </Button>
               </div>

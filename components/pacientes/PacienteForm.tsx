@@ -161,7 +161,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   placeholder="12345678"
                   maxLength={8}
                 />
-                {errors.dni && <p className="text-sm text-red-500">{errors.dni}</p>}
+                {errors.dni && <p className="text-sm text-destructive">{errors.dni}</p>}
               </div>
 
               <div>
@@ -174,7 +174,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   onChange={handleInputChange}
                   placeholder="paciente@email.com"
                 />
-                {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
               </div>
 
               <div>
@@ -187,7 +187,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   onChange={handleInputChange}
                   placeholder="Mínimo 8 caracteres"
                 />
-                {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
               </div>
 
               <div>
@@ -199,7 +199,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   onChange={handleInputChange}
                   placeholder="María José"
                 />
-                {errors.nombres && <p className="text-sm text-red-500">{errors.nombres}</p>}
+                {errors.nombres && <p className="text-sm text-destructive">{errors.nombres}</p>}
               </div>
 
               <div>
@@ -211,7 +211,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   onChange={handleInputChange}
                   placeholder="García"
                 />
-                {errors.apellido_paterno && <p className="text-sm text-red-500">{errors.apellido_paterno}</p>}
+                {errors.apellido_paterno && <p className="text-sm text-destructive">{errors.apellido_paterno}</p>}
               </div>
 
               <div>
@@ -234,7 +234,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   value={formData.fecha_nacimiento}
                   onChange={handleInputChange}
                 />
-                {errors.fecha_nacimiento && <p className="text-sm text-red-500">{errors.fecha_nacimiento}</p>}
+                {errors.fecha_nacimiento && <p className="text-sm text-destructive">{errors.fecha_nacimiento}</p>}
               </div>
 
               <div>
@@ -279,7 +279,7 @@ export function PacienteForm({ onSuccess, onCancel }: PacienteFormProps) {
                   onChange={handleInputChange}
                   placeholder="Número del documento"
                 />
-                {errors.numero_documento && <p className="text-sm text-red-500">{errors.numero_documento}</p>}
+                {errors.numero_documento && <p className="text-sm text-destructive">{errors.numero_documento}</p>}
               </div>
 
               <div>
