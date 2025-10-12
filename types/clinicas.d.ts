@@ -55,12 +55,14 @@ export interface CreateEspecialidadData {
   nombre: string;
   descripcion?: string;
   icono?: string;
+  activa?: boolean;
 }
 
 export interface UpdateEspecialidadData {
   nombre: string;
   descripcion?: string;
   icono?: string;
+  activa?: boolean;
 }
 
 // Tipos para filtros de especialidades
@@ -75,6 +77,8 @@ export interface Especialidad {
   nombre: string;
   descripcion?: string;
   icono?: string;
+  activa: boolean;
+  fecha_registro?: string;
 }
 
 // Tipos para doctores

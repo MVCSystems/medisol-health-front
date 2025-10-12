@@ -61,6 +61,7 @@ export function EspecialidadTable({ especialidades, loading, onEdit, onDelete }:
                 <TableHead>Nombre</TableHead>
                 <TableHead>Descripción</TableHead>
                 <TableHead>Ícono</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
@@ -100,6 +101,22 @@ export function EspecialidadTable({ especialidades, loading, onEdit, onDelete }:
                           Sin ícono
                         </span>
                       )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        especialidad.activa 
+                          ? 'bg-primary/10 text-primary' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        <div className={`w-2 h-2 rounded-full mr-1 ${
+                          especialidad.activa 
+                            ? 'bg-primary animate-pulse' 
+                            : 'bg-muted-foreground'
+                        }`}></div>
+                        {especialidad.activa ? 'Activa' : 'Inactiva'}
+                      </span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import {
   Dialog,
   DialogContent,
@@ -28,12 +29,14 @@ type FormData = {
   nombre: string
   descripcion: string
   icono: string
+  activa: boolean
 }
 
 const initialFormData: FormData = {
   nombre: '',
   descripcion: '',
   icono: '',
+  activa: true,
 }
 
 // Iconos médicos comunes
@@ -55,6 +58,7 @@ export function EspecialidadForm({ open, onClose, onSubmit, especialidad, loadin
           nombre: especialidad.nombre,
           descripcion: especialidad.descripcion || '',
           icono: especialidad.icono || '',
+          activa: especialidad.activa !== undefined ? especialidad.activa : true,
         })
       } else {
         setFormData(initialFormData)
@@ -63,7 +67,7 @@ export function EspecialidadForm({ open, onClose, onSubmit, especialidad, loadin
     }
   }, [open, especialidad])
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -97,6 +101,7 @@ export function EspecialidadForm({ open, onClose, onSubmit, especialidad, loadin
       nombre: formData.nombre.trim(),
       descripcion: formData.descripcion.trim() || undefined,
       icono: formData.icono.trim() || undefined,
+      activa: formData.activa,
     }
 
     await onSubmit(submitData)
@@ -182,6 +187,23 @@ export function EspecialidadForm({ open, onClose, onSubmit, especialidad, loadin
                 <span className="text-sm text-muted-foreground">Preview</span>
               </div>
             )}
+          </div>
+
+          {/* Estado Activa */}
+          <div className="flex items-center justify-between p-3 bg-background border rounded-lg">
+            <div className="space-y-1">
+              <Label htmlFor="activa" className="text-sm font-medium">
+                Especialidad Activa
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                Determina si la especialidad está disponible para reservas de citas
+              </p>
+            </div>
+            <Switch
+              id="activa"
+              checked={formData.activa}
+              onCheckedChange={(checked) => handleInputChange('activa', checked)}
+            />
           </div>
         </form>
 
