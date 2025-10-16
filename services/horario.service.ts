@@ -8,6 +8,9 @@ export interface HorarioCreateData {
   hora_fin: string;
   duracion_cita: number;
   activo: boolean;
+  tiene_refrigerio?: boolean;
+  hora_refrigerio_inicio?: string;
+  hora_refrigerio_fin?: string;
 }
 
 export interface DisponibilidadFilters {
