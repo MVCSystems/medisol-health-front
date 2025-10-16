@@ -1,20 +1,12 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { horarioService } from '@/services/horario.service';
-
-interface DisponibilidadCita {
-  id: number;
-  doctor: number;
-  fecha: string;
-  hora_inicio: string;
-  hora_fin: string;
-  disponible: boolean;
-}
+import type { DisponibilidadCita } from '@/types/clinicas';
 
 interface DisponibilidadViewProps {
   doctorId: number;
@@ -26,13 +18,7 @@ export default function DisponibilidadView({ doctorId, doctorName }: Disponibili
   const [fechaActual, setFechaActual] = useState(new Date());
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (doctorId) {
-      cargarDisponibilidad();
-    }
-  }, [doctorId, fechaActual]);
-
-  const cargarDisponibilidad = async () => {
+  const cargarDisponibilidad = useCallback(async () => {
     setLoading(true);
     try {
       const fechaInicio = new Date(fechaActual);
@@ -52,7 +38,13 @@ export default function DisponibilidadView({ doctorId, doctorName }: Disponibili
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId, fechaActual]);
+
+  useEffect(() => {
+    if (doctorId) {
+      cargarDisponibilidad();
+    }
+  }, [doctorId, cargarDisponibilidad]);
 
   const formatearFecha = (fecha: string) => {
     return new Date(fecha).toLocaleDateString('es-ES', {
