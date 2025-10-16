@@ -1,23 +1,13 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Plus, Edit, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { horarioService } from '@/services/horario.service';
 import { doctorService } from '@/services/doctor.service';
-import type { Doctor } from '@/types/clinicas';
-
-interface HorarioDoctor {
-  id: number;
-  doctor: number;
-  dia_semana: number;
-  hora_inicio: string;
-  hora_fin: string;
-  duracion_cita: number;
-  activo: boolean;
-}
+import type { Doctor, HorarioDoctor } from '@/types/clinicas';
 
 const DIAS_SEMANA = [
   { value: 0, label: 'Lunes' },
@@ -36,17 +26,7 @@ export default function GestionHorarios() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    cargarDoctores();
-  }, []);
-
-  useEffect(() => {
-    if (doctorSeleccionado) {
-      cargarHorariosDoctor(doctorSeleccionado);
-    }
-  }, [doctorSeleccionado]);
-
-  const cargarDoctores = async () => {
+  const cargarDoctores = useCallback(async () => {
     try {
       const response = await doctorService.getAll();
       setDoctores(response.results || []);
@@ -55,9 +35,13 @@ export default function GestionHorarios() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const cargarHorariosDoctor = async (doctorId: number) => {
+  useEffect(() => {
+    cargarDoctores();
+  }, [cargarDoctores]);
+
+  const cargarHorariosDoctor = useCallback(async (doctorId: number) => {
     try {
       setLoading(true);
       const response = await horarioService.getHorarios(doctorId);
@@ -67,7 +51,13 @@ export default function GestionHorarios() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (doctorSeleccionado) {
+      cargarHorariosDoctor(doctorSeleccionado);
+    }
+  }, [doctorSeleccionado, cargarHorariosDoctor]);
 
   const formatearHora = (hora: string) => {
     return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
