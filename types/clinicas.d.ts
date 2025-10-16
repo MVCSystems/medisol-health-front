@@ -172,7 +172,7 @@ export interface CitaCreate {
 
 // Tipos para horarios de doctores
 export interface HorarioDoctor {
-  id: number;
+  id?: number;
   doctor: number;
   doctor_nombre?: string;
   dia_semana: number;

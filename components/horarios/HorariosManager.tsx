@@ -287,7 +287,7 @@ export default function HorariosManager() {
                                 <Button 
                                   variant="destructive" 
                                   size="sm"
-                                  onClick={() => handleEliminarHorario(horario.id)}
+                                  onClick={() => handleEliminarHorario(horario.id!)}
                                 >
                                   <Trash2 className="h-4 w-4 mr-1" />
                                   Eliminar
