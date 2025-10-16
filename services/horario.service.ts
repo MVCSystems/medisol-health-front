@@ -21,34 +21,34 @@ export interface DisponibilidadFilters {
 
 class HorarioService {
   // Horarios regulares del doctor
-  async getHorarios(doctorId?: number) {
+  async getHorarios(doctorId?: number): Promise<HorarioDoctor[]> {
     const params = doctorId ? { doctor: doctorId } : {};
     const response = await api.get('/api/clinicas/horarios/', { params });
     return response.data;
   }
 
-  async createHorario(data: HorarioCreateData) {
+  async createHorario(data: HorarioCreateData): Promise<HorarioDoctor> {
     const response = await api.post('/api/clinicas/horarios/', data);
     return response.data;
   }
 
-  async updateHorario(id: number, data: Partial<HorarioCreateData>) {
+  async updateHorario(id: number, data: Partial<HorarioCreateData>): Promise<HorarioDoctor> {
     const response = await api.put(`/api/clinicas/horarios/${id}/`, data);
     return response.data;
   }
 
-  async deleteHorario(id: number) {
+  async deleteHorario(id: number): Promise<void> {
     const response = await api.delete(`/api/clinicas/horarios/${id}/`);
     return response.data;
   }
 
   // Disponibilidad específica (slots)
-  async getDisponibilidad(filters?: DisponibilidadFilters) {
+  async getDisponibilidad(filters?: DisponibilidadFilters): Promise<DisponibilidadCita[]> {
     const response = await api.get('/api/clinicas/disponibilidad/', { params: filters });
     return response.data;
   }
 
-  async generarDisponibilidad(doctorId: number, fechaInicio: string, fechaFin: string) {
+  async generarDisponibilidad(doctorId: number, fechaInicio: string, fechaFin: string): Promise<DisponibilidadCita[]> {
     const response = await api.post(`/api/clinicas/horarios/generar_disponibilidad/`, {
       doctor: doctorId,
       fecha_inicio: fechaInicio,
@@ -58,13 +58,13 @@ class HorarioService {
   }
 
   // Obtener horarios de un doctor específico
-  async getHorariosDoctor(doctorId: number) {
+  async getHorariosDoctor(doctorId: number): Promise<HorarioDoctor[]> {
     const response = await api.get('/api/clinicas/horarios/', { params: { doctor: doctorId } });
     return response.data;
   }
 
   // Obtener disponibilidad de un doctor para una fecha específica
-  async getDisponibilidadDoctor(doctorId: number, fecha?: string) {
+  async getDisponibilidadDoctor(doctorId: number, fecha?: string): Promise<DisponibilidadCita[]> {
     const params = { doctor: doctorId, ...(fecha && { fecha }) };
     const response = await api.get('/api/clinicas/disponibilidad/', { params });
     return response.data;
