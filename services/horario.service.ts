@@ -28,7 +28,7 @@ export interface PaginatedResponse<T> {
 
 class HorarioService {
   // Horarios regulares del doctor
-  async getHorarios(doctorId?: number): Promise<HorarioDoctor[]> {
+  async getHorarios(doctorId?: number): Promise<PaginatedResponse<HorarioDoctor>> {
     const params = doctorId ? { doctor: doctorId } : {};
     const response = await api.get('/api/clinicas/horarios/', { params });
     return response.data;
@@ -65,7 +65,7 @@ class HorarioService {
   }
 
   // Obtener horarios de un doctor específico
-  async getHorariosDoctor(doctorId: number): Promise<HorarioDoctor[]> {
+  async getHorariosDoctor(doctorId: number): Promise<PaginatedResponse<HorarioDoctor>> {
     const response = await api.get('/api/clinicas/horarios/', { params: { doctor: doctorId } });
     return response.data;
   }
