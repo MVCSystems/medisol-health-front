@@ -19,6 +19,13 @@ export interface DisponibilidadFilters {
   disponible?: boolean;
 }
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 class HorarioService {
   // Horarios regulares del doctor
   async getHorarios(doctorId?: number): Promise<HorarioDoctor[]> {
@@ -43,12 +50,12 @@ class HorarioService {
   }
 
   // Disponibilidad específica (slots)
-  async getDisponibilidad(filters?: DisponibilidadFilters): Promise<DisponibilidadCita[]> {
+  async getDisponibilidad(filters?: DisponibilidadFilters): Promise<PaginatedResponse<DisponibilidadCita>> {
     const response = await api.get('/api/clinicas/disponibilidad/', { params: filters });
     return response.data;
   }
 
-  async generarDisponibilidad(doctorId: number, fechaInicio: string, fechaFin: string): Promise<DisponibilidadCita[]> {
+  async generarDisponibilidad(doctorId: number, fechaInicio: string, fechaFin: string): Promise<PaginatedResponse<DisponibilidadCita>> {
     const response = await api.post(`/api/clinicas/horarios/generar_disponibilidad/`, {
       doctor: doctorId,
       fecha_inicio: fechaInicio,
@@ -64,7 +71,7 @@ class HorarioService {
   }
 
   // Obtener disponibilidad de un doctor para una fecha específica
-  async getDisponibilidadDoctor(doctorId: number, fecha?: string): Promise<DisponibilidadCita[]> {
+  async getDisponibilidadDoctor(doctorId: number, fecha?: string): Promise<PaginatedResponse<DisponibilidadCita>> {
     const params = { doctor: doctorId, ...(fecha && { fecha }) };
     const response = await api.get('/api/clinicas/disponibilidad/', { params });
     return response.data;
