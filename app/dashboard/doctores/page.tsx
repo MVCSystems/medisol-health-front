@@ -18,7 +18,7 @@ type ViewMode = 'list' | 'create' | 'edit' | 'view';
 
 export default function DoctoresPage() {
   const { isAdmin } = useAuthStore();
-  const { eliminarDoctor, reactivarDoctor, incluirInactivos, toggleIncluirInactivos } = useDoctores();
+  const { eliminarDoctor, reactivarDoctor, incluirInactivos, toggleIncluirInactivos, doctores, loading } = useDoctores();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -139,6 +139,8 @@ export default function DoctoresPage() {
           onView={handleView}
           onDelete={isAdmin() ? handleDelete : undefined}
           onReactivar={isAdmin() ? handleReactivar : undefined}
+          doctores={doctores}
+          loading={loading}
         />
       )}
 

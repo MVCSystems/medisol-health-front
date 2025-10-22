@@ -41,10 +41,14 @@ interface DoctorTableProps {
   onDelete?: (doctor: Doctor) => void;
   onReactivar?: (doctor: Doctor) => void;
   onAdd?: () => void;
+  doctores?: Doctor[];
+  loading?: boolean;
 }
 
-export function DoctorTable({ onEdit, onView, onDelete, onReactivar, onAdd }: DoctorTableProps) {
-  const { doctores, loading } = useDoctores();
+export function DoctorTable({ onEdit, onView, onDelete, onReactivar, onAdd, doctores: doctoresProp, loading: loadingProp }: DoctorTableProps) {
+  const hookData = useDoctores();
+  const doctores = doctoresProp ?? hookData.doctores;
+  const loading = loadingProp ?? hookData.loading;
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filtrar doctores por término de búsqueda

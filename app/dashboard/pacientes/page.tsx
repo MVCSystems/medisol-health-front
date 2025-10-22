@@ -17,7 +17,7 @@ import type { Paciente } from '@/types/clinicas';
 type ViewMode = 'list' | 'create' | 'edit' | 'view';
 
 export default function PacientesPage() {
-  const { eliminarPaciente, incluirInactivos, toggleIncluirInactivos, reactivarPaciente } = usePacientes();
+  const { eliminarPaciente, incluirInactivos, toggleIncluirInactivos, reactivarPaciente, pacientes, loading } = usePacientes();
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedPaciente, setSelectedPaciente] = useState<Paciente | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -137,6 +137,8 @@ export default function PacientesPage() {
             onView={handleView}
             onDelete={handleDelete}
             onReactivar={handleReactivar}
+            pacientes={pacientes}
+            loading={loading}
           />
         </>
       )}

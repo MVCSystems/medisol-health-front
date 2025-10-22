@@ -40,10 +40,14 @@ interface PacienteTableProps {
   onAdd?: () => void;
   onDelete?: (paciente: Paciente) => void;
   onReactivar?: (paciente: Paciente) => void;
+  pacientes?: Paciente[];
+  loading?: boolean;
 }
 
-export function PacienteTable({ onEdit, onView, onAdd, onDelete, onReactivar }: PacienteTableProps) {
-  const { pacientes, loading } = usePacientes();
+export function PacienteTable({ onEdit, onView, onAdd, onDelete, onReactivar, pacientes: pacientesProp, loading: loadingProp }: PacienteTableProps) {
+  const hookData = usePacientes();
+  const pacientes = pacientesProp ?? hookData.pacientes;
+  const loading = loadingProp ?? hookData.loading;
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filtrar pacientes por término de búsqueda

@@ -23,12 +23,9 @@ export function useDoctores() {
     try {
       setLoading(true);
       setError(null);
-      console.log('useDoctores.cargarDoctores - mostrarInactivos:', mostrarInactivos);
       const data = await doctorService.getAll(mostrarInactivos);
-      console.log('useDoctores.cargarDoctores - doctores recibidos:', data.results.length);
       setDoctores(data.results);
-    } catch (err) {
-      console.error('useDoctores.cargarDoctores - error:', err);
+    } catch {
       setError('Error al cargar la lista de doctores');
       toast.error('Error al cargar doctores');
     } finally {

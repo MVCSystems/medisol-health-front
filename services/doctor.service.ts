@@ -78,9 +78,7 @@ class DoctorService {
   // Listar doctores
   async getAll(incluirInactivos: boolean = false): Promise<{ results: Doctor[]; count: number }> {
     const params = incluirInactivos ? { incluir_inactivos: 'true' } : {};
-    console.log('getAll doctores - incluirInactivos:', incluirInactivos, 'params:', params);
     const response = await api.get(`${this.baseUrl}/`, { params });
-    console.log('getAll doctores - response count:', response.data.results?.length);
     return response.data;
   }
 
