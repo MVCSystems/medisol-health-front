@@ -31,7 +31,9 @@ export function DoctorEditForm({ doctor, onSuccess, onCancel }: DoctorEditFormPr
     telefono: doctor.usuario_data?.telefono || '',
     direccion: doctor.usuario_data?.direccion || '',
     titulo: doctor.titulo || '',
-    especialidades: doctor.especialidades || [],
+    especialidades: Array.isArray(doctor.especialidades)
+      ? doctor.especialidades.map((esp: any) => typeof esp === 'object' && esp !== null ? esp.id : esp)
+      : [],
     biografia: doctor.biografia || '',
     precio_consulta_base: doctor.precio_consulta_base?.toString() || '',
     clinica_id: doctor.clinica?.toString() || ''
