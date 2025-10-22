@@ -142,7 +142,7 @@ export function DoctorDetailView({ doctor, onEdit, onDelete, onBack }: DoctorDet
                 <label className="text-sm font-medium text-muted-foreground">Precio de Consulta Base</label>
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm font-medium">{formatPrecio(doctor.precio_consulta_base)}</p>
+                  <p className="text-sm font-medium">{formatPrecio(Number(doctor.precio_consulta_base))}</p>
                 </div>
               </div>
 
