@@ -212,7 +212,7 @@ export function DoctorTable({ onEdit, onView, onDelete, onAdd }: DoctorTableProp
 
                     <TableCell>
                       <div className="font-medium">
-                        {formatPrecio(doctor.precio_consulta_base)}
+                        {formatPrecio(Number(doctor.precio_consulta_base))}
                       </div>
                     </TableCell>
 
