@@ -56,7 +56,6 @@ class WebSocketService {
       };
 
       this.socket.onerror = (error) => {
-        console.error('Error de WebSocket:', error);
         reject(error);
       };
 
@@ -67,8 +66,8 @@ class WebSocketService {
           
           const handlers = this.messageHandlers.get(messageType) || [];
           handlers.forEach(handler => handler(data));
-        } catch (error) {
-          console.error('Error al procesar mensaje WebSocket:', error);
+        } catch {
+          // Silently fail on parse error
         }
       };
     });
@@ -90,8 +89,8 @@ class WebSocketService {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
       this.connect().then(() => {
         this.socket?.send(JSON.stringify(data));
-      }).catch(error => {
-        console.error('Error al enviar mensaje WebSocket:', error);
+      }).catch(() => {
+        // Failed to send
       });
       return;
     }

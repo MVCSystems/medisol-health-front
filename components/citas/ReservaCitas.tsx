@@ -19,6 +19,7 @@ import type { Doctor } from '@/types/clinicas';
 import type { DisponibilidadCita } from '@/types/clinicas';
 import DisponibilidadCalendar from './DisponibilidadCalendar';
 import ReservaCitaModal, { DatosCitaReserva } from './ReservaCitaModal';
+import { pacienteService } from '@/services/paciente.service';
 
 export default function ReservaCitas() {
   const [busqueda, setBusqueda] = useState('');
@@ -60,26 +61,37 @@ export default function ReservaCitas() {
     if (!doctorSeleccionado || !slotSeleccionado) return;
 
     try {
-      // Crear objeto compatible con CitaCreateData
-      console.log('Doctor seleccionado:', doctorSeleccionado);
-      console.log('Slot seleccionado:', slotSeleccionado);
+      // 1. Primero registrar al paciente
+      const pacienteData = {
+        dni: datosCita.paciente_dni.trim(),
+        email: datosCita.paciente_email.trim().toLowerCase(),
+        password: 'Temporal123!', // Contraseña temporal
+        nombres: datosCita.paciente_nombre.trim(),
+        apellido_paterno: datosCita.paciente_apellido.trim(),
+        tipo_documento: 'DNI',
+        numero_documento: datosCita.paciente_dni.trim(),
+        fecha_nacimiento: '2000-01-01',
+        genero: 'Otro' as const,
+        telefono: datosCita.paciente_telefono.trim(),
+        celular: datosCita.paciente_telefono.trim(),
+        clinica_id: doctorSeleccionado.clinica
+      };
+
+      const registroResponse = await pacienteService.registrar(pacienteData);
+      const pacienteId = registroResponse.paciente.id;
 
       const citaData = {
         clinica: doctorSeleccionado.clinica,
         doctor: doctorSeleccionado.id,
+        paciente: pacienteId,
         fecha: slotSeleccionado.fecha,
         hora_inicio: slotSeleccionado.hora_inicio,
         hora_fin: slotSeleccionado.hora_fin,
         motivo: datosCita.motivo_consulta.trim(),
-        disponibilidad_id: slotSeleccionado.id, // ID del slot de disponibilidad
-        // Información del paciente
-        paciente_datos: {
-          nombres: datosCita.paciente_nombre.trim(),
-          apellidos: datosCita.paciente_apellido.trim(),
-          email: datosCita.paciente_email.trim().toLowerCase(),
-          telefono: datosCita.paciente_telefono.trim(),
-          dni: datosCita.paciente_dni.trim()
-        }
+        estado: 'PENDIENTE',
+        notas: '',
+        precio_consulta: parseFloat(doctorSeleccionado.precio_consulta_base),
+        descuento: 0
       };
       
       await crearCita(citaData);
@@ -90,7 +102,7 @@ export default function ReservaCitas() {
       setDoctorSeleccionado(null);
       setFechaSeleccionada('');
     } catch (error) {
-      console.error('Error al reservar cita:', error);
+      throw error;
     }
   };
 

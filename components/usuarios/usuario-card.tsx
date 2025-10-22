@@ -59,7 +59,7 @@ export default function UsuarioCard({ usuario, onEdit, onDelete, onView, onToggl
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
+    return new Date(dateString).toLocaleDateString('es-PE', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'

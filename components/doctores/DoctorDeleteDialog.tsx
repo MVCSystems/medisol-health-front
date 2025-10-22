@@ -38,10 +38,10 @@ export function DoctorDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <Trash2 className="h-5 w-5 text-red-600" />
-            ¿Eliminar Doctor?
+            ¿Desactivar Doctor?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción eliminará permanentemente al doctor{' '}
+            Esta acción desactivará al doctor{' '}
             <span className="font-semibold">{doctorName}</span>
             {doctor.usuario_data?.dni && (
               <span> (DNI: {doctor.usuario_data.dni})</span>
@@ -66,8 +66,16 @@ export function DoctorDeleteDialog({
             )}
 
             <br /><br />
-            <span className="text-destructive font-medium">
-              ⚠️ Esta acción no se puede deshacer y eliminará: El perfil del doctor, su usuario asociado, todos los roles y permisos, y el historial de citas (si las hay).
+            <span className="text-amber-600 font-medium">
+              ℹ️ El doctor será desactivado y ya no aparecerá en los listados activos.
+              <br />
+              • No podrá iniciar sesión en el sistema
+              <br />
+              • No se eliminará su historial de citas
+              <br />
+              • Los datos se conservarán para auditoría
+              <br />
+              • Puede ser reactivado posteriormente por un administrador
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -78,17 +86,17 @@ export function DoctorDeleteDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-red-600 hover:bg-red-700"
+            className="bg-amber-600 hover:bg-amber-700"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Eliminando...
+                Desactivando...
               </>
             ) : (
               <>
                 <Trash2 className="mr-2 h-4 w-4" />
-                Sí, eliminar doctor
+                Sí, desactivar doctor
               </>
             )}
           </AlertDialogAction>

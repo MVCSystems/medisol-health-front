@@ -85,7 +85,6 @@ export default function ChatbotPage() {
     chatbotWS
       .connect()
       .then(() => {
-        console.log("WebSocket conectado");
         setConnected(true);
       })
       .catch((error) => {
@@ -130,7 +129,6 @@ export default function ChatbotPage() {
       const response = data as unknown as ChatbotApiResponse;
       setIsTyping(false);
       // Manejar la información recibida (especialidades, doctores, etc.)
-      console.log("Información recibida:", response);
 
       // Por ejemplo, mostrar un mensaje con las especialidades
       if (response.data?.especialidades && response.data.especialidades.length > 0) {

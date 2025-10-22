@@ -8,6 +8,7 @@ export interface Usuario {
   telefono?: string;
   direccion?: string;
   is_active: boolean;
+  fecha_eliminacion?: string;
   roles: UsuarioRol[];
   date_joined: string;
 }

@@ -45,12 +45,9 @@ class DoctorService {
   // Obtener detalles de un doctor
   async getDoctor(id: number): Promise<Doctor | null> {
     try {
-      console.log('🔍 Obteniendo detalles del doctor:', id);
       const response = await api.get(`${this.baseUrl}/${id}/`);
-      console.log('📋 Respuesta del doctor:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('❌ Error al obtener detalles del doctor:', error);
+    } catch {
       return null;
     }
   }
@@ -79,8 +76,11 @@ class DoctorService {
   }
 
   // Listar doctores
-  async getAll(): Promise<{ results: Doctor[]; count: number }> {
-    const response = await api.get(`${this.baseUrl}/`);
+  async getAll(incluirInactivos: boolean = false): Promise<{ results: Doctor[]; count: number }> {
+    const params = incluirInactivos ? { incluir_inactivos: 'true' } : {};
+    console.log('getAll doctores - incluirInactivos:', incluirInactivos, 'params:', params);
+    const response = await api.get(`${this.baseUrl}/`, { params });
+    console.log('getAll doctores - response count:', response.data.results?.length);
     return response.data;
   }
 
@@ -112,9 +112,15 @@ class DoctorService {
     return response.data;
   }
 
-  // Eliminar doctor
+  // Eliminar doctor (soft delete)
   async delete(id: number): Promise<void> {
     await api.delete(`${this.baseUrl}/${id}/`);
+  }
+
+  // Reactivar doctor
+  async reactivar(id: number): Promise<{ detail: string }> {
+    const response = await api.post(`${this.baseUrl}/${id}/reactivar/`);
+    return response.data;
   }
 
   // Filtrar doctores por clínica

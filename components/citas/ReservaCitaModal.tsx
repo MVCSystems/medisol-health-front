@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CalendarDays, Clock, User, DollarSign, FileText } from 'lucide-react';
+import { formatearFechaDisplay } from '@/lib/utils';
 import type { DisponibilidadCita } from '@/types/clinicas';
 import type { Doctor } from '@/types/clinicas';
 
@@ -64,17 +65,8 @@ export default function ReservaCitaModal({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha + 'T00:00:00').toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -192,7 +184,7 @@ export default function ReservaCitaModal({
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-muted-foreground" />
               <div>
-                <p className="font-medium text-foreground">{formatearFecha(slot.fecha)}</p>
+                <p className="font-medium text-foreground">{formatearFechaDisplay(slot.fecha)}</p>
                 <p className="text-sm text-muted-foreground">Fecha</p>
               </div>
             </div>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { formatearFecha, formatearFechaDisplay } from '@/lib/utils';
 import type { DisponibilidadCita } from '@/types/clinicas';
 
 interface DisponibilidadCalendarProps {
@@ -17,7 +18,6 @@ interface DisponibilidadCalendarProps {
 }
 
 export default function DisponibilidadCalendar({
-  doctorId,
   fechaSeleccionada,
   onFechaSeleccionada,
   disponibilidades,
@@ -58,12 +58,8 @@ export default function DisponibilidadCalendar({
     return fechas;
   };
 
-  const formatearFecha = (fecha: Date) => {
-    return fecha.toISOString().split('T')[0];
-  };
-
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -190,12 +186,7 @@ export default function DisponibilidadCalendar({
             <div className="flex items-center gap-2 mb-4">
               <Clock className="h-4 w-4 text-primary" />
               <h4 className="font-medium text-foreground">
-                Horarios disponibles - {new Date(fechaSeleccionada + 'T00:00:00').toLocaleDateString('es-ES', {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+                Horarios disponibles - {formatearFechaDisplay(fechaSeleccionada)}
               </h4>
             </div>
             

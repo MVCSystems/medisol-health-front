@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Plus, Edit, Trash2, CheckCircle, AlertCircle } from 'lucide-react';
 import { horarioService } from '@/services/horario.service';
 import { doctorService } from '@/services/doctor.service';
+import { formatearFecha } from '@/lib/utils';
 import type { Doctor, HorarioDoctor } from '@/types/clinicas';
 
 const DIAS_SEMANA = [
@@ -60,7 +61,7 @@ export default function GestionHorarios() {
   }, [doctorSeleccionado, cargarHorariosDoctor]);
 
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -74,8 +75,8 @@ export default function GestionHorarios() {
     if (!doctorSeleccionado) return;
     
     try {
-      const fechaInicio = new Date().toISOString().split('T')[0];
-      const fechaFin = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const fechaInicio = formatearFecha(new Date());
+      const fechaFin = formatearFecha(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
       
       await horarioService.generarDisponibilidad(doctorSeleccionado, fechaInicio, fechaFin);
       alert('Disponibilidad generada para los próximos 30 días');

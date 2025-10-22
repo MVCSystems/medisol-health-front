@@ -35,12 +35,29 @@ export default function DeleteConfirmDialog({
     <AlertDialog open={open} onOpenChange={onClose}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-          <AlertDialogDescription>
-            Esta acción eliminará permanentemente al usuario{' '}
-            <span className="font-semibold">{userName}</span> (DNI: {usuario.dni}).
-            <br />
-            <span className="text-destructive">Esta acción no se puede deshacer.</span>
+          <AlertDialogTitle>¿Desactivar Usuario?</AlertDialogTitle>
+          <AlertDialogDescription className="space-y-2">
+            <p>
+              Esta acción desactivará al usuario{' '}
+              <span className="font-semibold">{userName}</span> (DNI: {usuario.dni}).
+            </p>
+            {usuario.roles && usuario.roles.length > 0 && (
+              <p className="text-sm">
+                <span className="font-medium">Roles actuales:</span>{' '}
+                {usuario.roles.map(r => r.rol_nombre).join(', ')}
+              </p>
+            )}
+            <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-md mt-3">
+              <p className="text-amber-700 dark:text-amber-400 text-sm font-medium">
+                ℹ️ Al desactivar este usuario:
+              </p>
+              <ul className="text-amber-600 dark:text-amber-500 text-sm mt-2 space-y-1 list-disc list-inside">
+                <li>No podrá iniciar sesión en el sistema</li>
+                <li>Se conservarán todos sus registros y datos</li>
+                <li>El historial de actividad permanecerá intacto</li>
+                <li>Puede ser reactivado posteriormente</li>
+              </ul>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -50,9 +67,9 @@ export default function DeleteConfirmDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-destructive hover:bg-destructive/90 focus:ring-destructive"
+            className="bg-amber-600 hover:bg-amber-700 focus:ring-amber-600"
           >
-            {isLoading ? 'Eliminando...' : 'Eliminar Usuario'}
+            {isLoading ? 'Desactivando...' : 'Sí, desactivar usuario'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -28,7 +28,8 @@ import {
   Users,
   Phone,
   Mail,
-  Calendar
+  Calendar,
+  RotateCcw
 } from 'lucide-react';
 import { usePacientes } from '@/hooks/usePacientes';
 import type { Paciente } from '@/types/clinicas';
@@ -38,9 +39,10 @@ interface PacienteTableProps {
   onView?: (paciente: Paciente) => void;
   onAdd?: () => void;
   onDelete?: (paciente: Paciente) => void;
+  onReactivar?: (paciente: Paciente) => void;
 }
 
-export function PacienteTable({ onEdit, onView, onAdd, onDelete }: PacienteTableProps) {
+export function PacienteTable({ onEdit, onView, onAdd, onDelete, onReactivar }: PacienteTableProps) {
   const { pacientes, loading } = usePacientes();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -179,8 +181,13 @@ export function PacienteTable({ onEdit, onView, onAdd, onDelete }: PacienteTable
                     
                     <TableCell>
                       <div>
-                        <div className="font-medium">
-                          {paciente.usuario_data?.first_name} {paciente.usuario_data?.last_name}
+                        <div className="font-medium flex items-center gap-2">
+                          <span>{paciente.usuario_data?.first_name} {paciente.usuario_data?.last_name}</span>
+                          {!paciente.activo && (
+                            <Badge variant="secondary" className="text-xs">
+                              Inactivo
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground">
                           DNI: {paciente.usuario_data?.dni}
@@ -274,13 +281,24 @@ export function PacienteTable({ onEdit, onView, onAdd, onDelete }: PacienteTable
                               Editar
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(paciente)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
+                          {!paciente.activo && onReactivar && (
+                            <DropdownMenuItem
+                              onClick={() => onReactivar(paciente)}
+                              className="text-green-600"
+                            >
+                              <RotateCcw className="mr-2 h-4 w-4" />
+                              Reactivar
+                            </DropdownMenuItem>
+                          )}
+                          {paciente.activo && (
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(paciente)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

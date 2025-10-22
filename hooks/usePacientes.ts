@@ -16,13 +16,14 @@ export function usePacientes() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
 
   // Cargar pacientes
-  const cargarPacientes = async () => {
+  const cargarPacientes = async (mostrarInactivos: boolean = incluirInactivos) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await pacienteService.getAll();
+      const data = await pacienteService.getAll(mostrarInactivos);
       setPacientes(data.results);
     } catch (error) {
       console.error('Error al cargar pacientes:', error);
@@ -31,6 +32,13 @@ export function usePacientes() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Toggle filtro de inactivos
+  const toggleIncluirInactivos = () => {
+    const nuevoEstado = !incluirInactivos;
+    setIncluirInactivos(nuevoEstado);
+    cargarPacientes(nuevoEstado);
   };
 
   // Registrar nuevo paciente
@@ -80,16 +88,20 @@ export function usePacientes() {
     try {
       setError(null);
       await pacienteService.delete(id);
-      toast.success('Paciente eliminado exitosamente');
+      toast.success('Paciente desactivado exitosamente', {
+        description: 'El paciente ya no aparecerá en los listados activos'
+      });
       
       // Recargar la lista
       await cargarPacientes();
       
       return true;
     } catch (error) {
-      console.error('Error al eliminar paciente:', error);
+      console.error('Error al desactivar paciente:', error);
       const apiError = error as ApiError;
-      const errorMessage = apiError?.response?.data?.error || 'Error al eliminar paciente';
+      const errorMessage = String(apiError?.response?.data?.detail || 
+                          apiError?.response?.data?.error || 
+                          'Error al desactivar paciente');
       setError(errorMessage);
       toast.error(errorMessage);
       return false;
@@ -126,19 +138,48 @@ export function usePacientes() {
     }
   };
 
+  // Reactivar paciente
+  const reactivarPaciente = async (id: number): Promise<boolean> => {
+    try {
+      setError(null);
+      await pacienteService.reactivar(id);
+      toast.success('Paciente reactivado exitosamente', {
+        description: 'El paciente y su usuario han sido reactivados'
+      });
+      
+      // Recargar la lista
+      await cargarPacientes();
+      
+      return true;
+    } catch (error) {
+      console.error('Error al reactivar paciente:', error);
+      const apiError = error as ApiError;
+      const errorMessage = String(apiError?.response?.data?.detail || 
+                          apiError?.response?.data?.error || 
+                          'Error al reactivar paciente');
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    }
+  };
+
   // Cargar pacientes al montar el componente
   useEffect(() => {
     cargarPacientes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
     pacientes,
     loading,
     error,
+    incluirInactivos,
     cargarPacientes,
+    toggleIncluirInactivos,
     registrarPaciente,
     actualizarPaciente,
     eliminarPaciente,
+    reactivarPaciente,
     obtenerPaciente,
     buscarPacientes,
   };

@@ -16,21 +16,31 @@ export function useDoctores() {
   const [doctores, setDoctores] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [incluirInactivos, setIncluirInactivos] = useState(false);
 
   // Cargar doctores
-  const cargarDoctores = async () => {
+  const cargarDoctores = async (mostrarInactivos: boolean = incluirInactivos) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await doctorService.getAll();
+      console.log('useDoctores.cargarDoctores - mostrarInactivos:', mostrarInactivos);
+      const data = await doctorService.getAll(mostrarInactivos);
+      console.log('useDoctores.cargarDoctores - doctores recibidos:', data.results.length);
       setDoctores(data.results);
-    } catch (error) {
-      console.error('Error al cargar doctores:', error);
+    } catch (err) {
+      console.error('useDoctores.cargarDoctores - error:', err);
       setError('Error al cargar la lista de doctores');
       toast.error('Error al cargar doctores');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Toggle filtro de inactivos
+  const toggleIncluirInactivos = () => {
+    const nuevoEstado = !incluirInactivos;
+    setIncluirInactivos(nuevoEstado);
+    cargarDoctores(nuevoEstado);
   };
 
   // Registrar nuevo doctor
@@ -45,7 +55,6 @@ export function useDoctores() {
       
       return response;
     } catch (error) {
-      console.error('Error al registrar doctor:', error);
       const apiError = error as ApiError;
       const errorMessage = apiError?.response?.data?.error || 'Error al registrar doctor';
       setError(errorMessage);
@@ -80,16 +89,20 @@ export function useDoctores() {
     try {
       setError(null);
       await doctorService.delete(id);
-      toast.success('Doctor eliminado exitosamente');
+      toast.success('Doctor desactivado exitosamente', {
+        description: 'El doctor ya no aparecerá en los listados activos'
+      });
       
       // Recargar la lista
       await cargarDoctores();
       
       return true;
     } catch (error) {
-      console.error('Error al eliminar doctor:', error);
+      console.error('Error al desactivar doctor:', error);
       const apiError = error as ApiError;
-      const errorMessage = apiError?.response?.data?.error || 'Error al eliminar doctor';
+      const errorMessage = String(apiError?.response?.data?.detail || 
+                          apiError?.response?.data?.error || 
+                          'Error al desactivar doctor');
       setError(errorMessage);
       toast.error(errorMessage);
       return false;
@@ -141,19 +154,48 @@ export function useDoctores() {
     }
   };
 
+  // Reactivar doctor
+  const reactivarDoctor = async (id: number): Promise<boolean> => {
+    try {
+      setError(null);
+      await doctorService.reactivar(id);
+      toast.success('Doctor reactivado exitosamente', {
+        description: 'El doctor y su usuario han sido reactivados'
+      });
+      
+      // Recargar la lista
+      await cargarDoctores();
+      
+      return true;
+    } catch (error) {
+      console.error('Error al reactivar doctor:', error);
+      const apiError = error as ApiError;
+      const errorMessage = String(apiError?.response?.data?.detail || 
+                          apiError?.response?.data?.error || 
+                          'Error al reactivar doctor');
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    }
+  };
+
   // Cargar doctores al montar el componente
   useEffect(() => {
     cargarDoctores();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
     doctores,
     loading,
     error,
+    incluirInactivos,
     cargarDoctores,
+    toggleIncluirInactivos,
     registrarDoctor,
     actualizarDoctor,
     eliminarDoctor,
+    reactivarDoctor,
     obtenerDoctor,
     obtenerDoctoresPorClinica,
     obtenerDoctoresPorEspecialidad,

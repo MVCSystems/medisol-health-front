@@ -28,7 +28,8 @@ import {
   User,
   Stethoscope,
   Phone,
-  Mail
+  Mail,
+  RotateCcw
 } from 'lucide-react';
 import { useDoctores } from '@/hooks/useDoctores';
 import type { Doctor } from '@/types/clinicas';
@@ -38,10 +39,11 @@ interface DoctorTableProps {
   onEdit?: (doctor: Doctor) => void;
   onView?: (doctor: Doctor) => void;
   onDelete?: (doctor: Doctor) => void;
+  onReactivar?: (doctor: Doctor) => void;
   onAdd?: () => void;
 }
 
-export function DoctorTable({ onEdit, onView, onDelete, onAdd }: DoctorTableProps) {
+export function DoctorTable({ onEdit, onView, onDelete, onReactivar, onAdd }: DoctorTableProps) {
   const { doctores, loading } = useDoctores();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -166,8 +168,13 @@ export function DoctorTable({ onEdit, onView, onDelete, onAdd }: DoctorTableProp
                     
                     <TableCell>
                       <div>
-                        <div className="font-medium">
-                          {doctor.usuario_data?.first_name} {doctor.usuario_data?.last_name}
+                        <div className="font-medium flex items-center gap-2">
+                          <span>{doctor.usuario_data?.first_name} {doctor.usuario_data?.last_name}</span>
+                          {!doctor.activo && (
+                            <Badge variant="secondary" className="text-xs">
+                              Inactivo
+                            </Badge>
+                          )}
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {doctor.titulo}
@@ -240,13 +247,24 @@ export function DoctorTable({ onEdit, onView, onDelete, onAdd }: DoctorTableProp
                               Editar
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(doctor)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
+                          {!doctor.activo && onReactivar && (
+                            <DropdownMenuItem
+                              onClick={() => onReactivar(doctor)}
+                              className="text-green-600"
+                            >
+                              <RotateCcw className="mr-2 h-4 w-4" />
+                              Reactivar
+                            </DropdownMenuItem>
+                          )}
+                          {doctor.activo && (
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(doctor)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

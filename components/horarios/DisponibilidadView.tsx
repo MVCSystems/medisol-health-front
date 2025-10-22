@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { horarioService } from '@/services/horario.service';
+import { formatearFecha } from '@/lib/utils';
 import type { DisponibilidadCita } from '@/types/clinicas';
 
 interface DisponibilidadViewProps {
@@ -29,7 +30,7 @@ export default function DisponibilidadView({ doctorId, doctorName }: Disponibili
       
       const response = await horarioService.getDisponibilidad({
         doctor: doctorId,
-        fecha: fechaInicio.toISOString().split('T')[0]
+        fecha: formatearFecha(fechaInicio)
       });
       
       setDisponibilidad(response.results || []);
@@ -46,8 +47,8 @@ export default function DisponibilidadView({ doctorId, doctorName }: Disponibili
     }
   }, [doctorId, cargarDisponibilidad]);
 
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
+  const formatearFechaDisplay = (fecha: string) => {
+    return new Date(fecha).toLocaleDateString('es-PE', {
       weekday: 'long',
       day: '2-digit',
       month: '2-digit'
@@ -55,7 +56,7 @@ export default function DisponibilidadView({ doctorId, doctorName }: Disponibili
   };
 
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -140,7 +141,7 @@ export default function DisponibilidadView({ doctorId, doctorName }: Disponibili
               .map(([fecha, slots]) => (
                 <div key={fecha} className="border rounded-lg p-4">
                   <h3 className="font-semibold text-lg mb-3 capitalize">
-                    {formatearFecha(fecha)}
+                    {formatearFechaDisplay(fecha)}
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
                     {slots

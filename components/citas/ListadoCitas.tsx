@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -19,11 +19,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Eye, Pencil, Trash2 } from 'lucide-react';
+import { Search, Eye, Pencil, Trash2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { useCitas } from '@/hooks/useCitas';
 import type { CitaWithDetails } from '@/types/citas';
 import { citaService } from '@/services/cita.service';
 import { useToast } from "@/components/ui/use-toast";
+import { formatearFechaDisplay } from '@/lib/utils';
 import { DetallesCita } from './DetallesCita';
 import { EditarCita } from './EditarCita';
 import {
@@ -38,6 +39,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from '@/store/authStore';
 
 const estadoColors = {
   PENDIENTE: 'bg-yellow-500',
@@ -48,6 +50,7 @@ const estadoColors = {
 
 export default function ListadoCitas() {
   const { toast } = useToast();
+  const { isDoctor, isAdmin } = useAuthStore();
   
   const [filtros, setFiltros] = useState({
     busqueda: '',
@@ -69,6 +72,23 @@ export default function ListadoCitas() {
     setMostrarModalEditar(true);
   };
 
+  const handleCambiarEstado = async (id: number, nuevoEstado: string) => {
+    try {
+      await citaService.cambiarEstado(id, nuevoEstado);
+      refetch();
+      toast({
+        title: "Estado actualizado",
+        description: `La cita ha sido marcada como ${nuevoEstado.toLowerCase()}`,
+      });
+    } catch {
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el estado de la cita",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleEliminarCita = async (id: number) => {
     try {
       await citaService.deleteCita(id);
@@ -77,7 +97,7 @@ export default function ListadoCitas() {
         title: "Cita eliminada",
         description: "La cita ha sido eliminada exitosamente",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "No se pudo eliminar la cita",
@@ -88,24 +108,8 @@ export default function ListadoCitas() {
 
   const { citas, loading, refetch } = useCitas();
   
-  // Debug: Ver los datos que recibimos de forma detallada
-  useEffect(() => {
-    if (citas.length > 0) {
-      console.log('🔍 Datos completos de la primera cita:', citas[0]);
-    }
-  }, [citas]);
-
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -202,7 +206,7 @@ export default function ListadoCitas() {
                     <TableRow key={cita.id}>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{formatearFecha(cita.fecha)}</span>
+                          <span className="font-medium">{formatearFechaDisplay(cita.fecha)}</span>
                           <span className="text-sm text-muted-foreground">
                             {formatearHora(cita.hora_inicio)} - {formatearHora(cita.hora_fin)}
                           </span>
@@ -247,49 +251,98 @@ export default function ListadoCitas() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex justify-end gap-2">
+                        <div className="flex justify-end gap-2 flex-wrap">
+                          {/* Botones de cambio de estado - Solo para doctores y admins */}
+                          {(isDoctor() || isAdmin()) && cita.estado !== 'COMPLETADA' && cita.estado !== 'CANCELADA' && (
+                            <>
+                              {cita.estado === 'PENDIENTE' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  onClick={() => handleCambiarEstado(cita.id, 'CONFIRMADA')}
+                                  title="Confirmar cita"
+                                >
+                                  <Clock className="h-4 w-4 mr-1" />
+                                  Confirmar
+                                </Button>
+                              )}
+                              {(cita.estado === 'CONFIRMADA' || cita.estado === 'PENDIENTE') && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={() => handleCambiarEstado(cita.id, 'COMPLETADA')}
+                                  title="Marcar como completada"
+                                >
+                                  <CheckCircle2 className="h-4 w-4 mr-1" />
+                                  Completar
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleCambiarEstado(cita.id, 'CANCELADA')}
+                                title="Cancelar cita"
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Cancelar
+                              </Button>
+                            </>
+                          )}
+                          
+                          {/* Botones de ver y editar */}
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => handleVerDetalles(cita)}
+                            title="Ver detalles"
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleEditarCita(cita)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
+                          
+                          {isAdmin() && (
+                            <>
                               <Button
                                 variant="outline"
                                 size="icon"
-                                className="text-red-500 hover:text-red-600"
+                                onClick={() => handleEditarCita(cita)}
+                                title="Editar cita"
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Pencil className="h-4 w-4" />
                               </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>¿Eliminar cita?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. La cita será eliminada permanentemente.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-red-500 hover:bg-red-600"
-                                  onClick={() => handleEliminarCita(cita.id)}
-                                >
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="text-red-500 hover:text-red-600"
+                                    title="Eliminar cita"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Eliminar cita?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Esta acción no se puede deshacer. La cita será eliminada permanentemente.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-red-500 hover:bg-red-600"
+                                      onClick={() => handleEliminarCita(cita.id)}
+                                    >
+                                      Eliminar
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

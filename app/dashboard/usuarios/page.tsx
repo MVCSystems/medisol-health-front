@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import RoleGuard from "@/components/auth/RoleGuard";
 import { useAuthStore } from "@/store/authStore";
 import { useUsuarios } from "@/hooks/useUsuarios";
 import UsuarioCard from "@/components/usuarios/usuario-card";
@@ -88,11 +89,6 @@ export default function UsuariosPage() {
     setShowDeleteDialog(true);
   };
 
-  const handleViewClick = (usuario: Usuario) => {
-    // Implementar vista detallada si es necesario
-    console.log("Ver usuario:", usuario);
-  };
-
   const handleToggleStatus = async (usuario: Usuario) => {
     await toggleUsuarioStatus(usuario.id, !usuario.is_active);
   };
@@ -151,18 +147,19 @@ export default function UsuariosPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users className="h-8 w-8 text-primary" />
-          <div>
-            <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-            <p className="text-muted-foreground">
-              Administra usuarios del sistema médico ({totalCount} usuarios)
-            </p>
+    <RoleGuard allowedRoles={['admin']}>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+              <p className="text-muted-foreground">
+                Administra usuarios del sistema médico ({totalCount} usuarios)
+              </p>
+            </div>
           </div>
-        </div>
         <Button onClick={handleCreateClick} className="gap-2">
           <Plus className="h-4 w-4" />
           Nuevo Usuario
@@ -230,7 +227,6 @@ export default function UsuariosPage() {
               usuario={usuario}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
-              onView={handleViewClick}
               onToggleStatus={handleToggleStatus}
             />
           ))}
@@ -268,6 +264,7 @@ export default function UsuariosPage() {
         usuario={selectedUsuario}
         isLoading={isDeleting}
       />
-    </div>
+      </div>
+    </RoleGuard>
   );
 }

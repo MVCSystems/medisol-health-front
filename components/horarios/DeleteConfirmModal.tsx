@@ -23,7 +23,7 @@ export default function DeleteConfirmModal({
   loading = false
 }: DeleteConfirmModalProps) {
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });

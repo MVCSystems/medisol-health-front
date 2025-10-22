@@ -64,12 +64,21 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
 
       // Actions
-      login: (data: LoginResponse) => 
-        set({ 
-          user: data.user,
-          tokens: data.tokens,
-          isAuthenticated: true
-        }),
+        login: (data: LoginResponse) => {
+          // Guardar tokens en localStorage para persistencia
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('accessToken', data.tokens.access)
+            localStorage.setItem('refreshToken', data.tokens.refresh)
+          }
+          set({
+            user: data.user,
+            tokens: {
+              access: data.tokens.access,
+              refresh: data.tokens.refresh
+            },
+            isAuthenticated: !!data.tokens.access
+          })
+        },
 
       logout: () => 
         set({ 
@@ -97,8 +106,8 @@ export const useAuthStore = create<AuthState>()(
 
       isAdmin: () => {
         const { user } = get()
-        // El superusuario siempre es admin, o si tiene el rol de Administrador
-        return user?.is_superuser || user?.is_staff || user?.roles?.[0]?.rol === 'Administrador'
+        // Solo el superusuario o el rol 'Administrador' es admin
+        return user?.is_superuser || user?.roles?.some(role => role.rol === 'Administrador') || false;
       },
 
       isDoctor: () => {
@@ -106,10 +115,10 @@ export const useAuthStore = create<AuthState>()(
         return user?.roles?.some(role => role.rol === 'Doctor') || false
       },
 
-      isPaciente: () => {
-        const { user } = get()
-        return user?.roles?.some(role => role.rol === 'Paciente') || false
-      },
+        isPaciente: () => {
+          const { user } = get();
+          return user?.roles?.some(role => role.rol=== 'Paciente') || false;
+        },
 
       isRecepcionista: () => {
         const { user } = get()

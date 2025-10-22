@@ -57,20 +57,14 @@ export default function EspecialidadesPage() {
   }
 
   const handleFormSubmit = async (data: CreateEspecialidadData | UpdateEspecialidadData) => {
-    let success = false
-    
-    if (editingEspecialidad) {
-      const result = await updateEspecialidad(editingEspecialidad.id, data as UpdateEspecialidadData)
-      success = !!result
-    } else {
-      const result = await createEspecialidad(data as CreateEspecialidadData)
-      success = !!result
-    }
+    const success = editingEspecialidad
+      ? !!(await updateEspecialidad(editingEspecialidad.id, data as UpdateEspecialidadData))
+      : !!(await createEspecialidad(data as CreateEspecialidadData));
 
     if (success) {
-      handleFormClose()
+      handleFormClose();
     }
-  }
+  };
 
   return (
     <div className="space-y-6">

@@ -10,6 +10,7 @@ export interface Clinica {
   descripcion?: string;
   activa: boolean;
   fecha_registro: string;
+  fecha_eliminacion?: string;
 }
 
 // Tipos para formularios de clínicas
@@ -50,6 +51,7 @@ export interface Doctor {
   foto?: string;
   precio_consulta_base: string;
   activo: boolean;
+  fecha_eliminacion?: string;
   clinica: number;
   usuario: number;
 }
@@ -97,6 +99,7 @@ export interface Especialidad {
   icono?: string;
   activa: boolean;
   fecha_registro?: string;
+  fecha_eliminacion?: string;
 }
 
 // Tipos para doctores
@@ -149,6 +152,8 @@ export interface Paciente {
   provincia?: string;
   distrito?: string;
   celular?: string;
+  activo: boolean;
+  fecha_eliminacion?: string;
 }
 
 // Tipos para citas

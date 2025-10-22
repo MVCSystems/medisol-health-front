@@ -49,11 +49,11 @@ export function PacienteDeleteDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Trash2 className="h-5 w-5 text-destructive" />
-            ¿Eliminar Paciente?
+            <Trash2 className="h-5 w-5 text-amber-600" />
+            ¿Desactivar Paciente?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Esta acción eliminará permanentemente al paciente{' '}
+            Esta acción desactivará al paciente{' '}
             <span className="font-semibold">{pacienteName}</span>
             {paciente.usuario_data?.dni && (
               <span> (DNI: {paciente.usuario_data.dni})</span>
@@ -87,8 +87,18 @@ export function PacienteDeleteDialog({
             )}
 
             <br /><br />
-            <span className="text-destructive font-medium">
-              ⚠️ Esta acción no se puede deshacer y eliminará: El perfil del paciente, su usuario asociado, todos los roles y permisos, el historial médico (si existe) y las citas programadas y pasadas.
+            <span className="text-amber-600 font-medium">
+              ℹ️ El paciente será desactivado y ya no aparecerá en los listados activos.
+              <br />
+              • No podrá iniciar sesión en el sistema
+              <br />
+              • Se conservará su historial médico completo
+              <br />
+              • Las citas pasadas permanecerán registradas
+              <br />
+              • Los datos se mantienen para auditoría
+              <br />
+              • Puede ser reactivado posteriormente por un administrador
             </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
@@ -99,17 +109,17 @@ export function PacienteDeleteDialog({
           <AlertDialogAction
             onClick={onConfirm}
             disabled={isLoading}
-            className="bg-destructive hover:bg-destructive/90"
+            className="bg-amber-600 hover:bg-amber-700"
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Eliminando...
+                Desactivando...
               </>
             ) : (
               <>
                 <Trash2 className="mr-2 h-4 w-4" />
-                Sí, eliminar paciente
+                Sí, desactivar paciente
               </>
             )}
           </AlertDialogAction>

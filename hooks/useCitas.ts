@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { citaService, CitaCreateData, CitaFilters } from '@/services/cita.service';
+import { useAuthStore } from '@/store/authStore';
 import type { DisponibilidadCita } from '@/types/clinicas';
 import type { CitaWithDetails } from '@/types/citas';
 
@@ -7,34 +8,31 @@ export const useCitas = (filters?: CitaFilters) => {
   const [citas, setCitas] = useState<CitaWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuthStore();
 
   const fetchCitas = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      console.log('🔍 Buscando citas con filtros:', filters);
       
-      const response = await citaService.getCitas(filters);
-      console.log('📦 Respuesta completa:', {
-        total: response.count,
-        citas: response.results
-      });
+      // Pacientes y doctores usan /mis_citas/, solo admins/staff usan /citas/
+      const isStaffOrAdmin = user?.is_staff || user?.is_superuser;
+      const response = isStaffOrAdmin 
+        ? await citaService.getCitas(filters)
+        : await citaService.getMisCitas(filters);
       
       if (response.results) {
-        console.log('🩺 Primera cita ejemplo:', response.results[0]);
         setCitas(response.results);
       } else {
-        console.warn('⚠️ No se encontraron citas');
         setCitas([]);
       }
-    } catch (err) {
-      console.error('❌ Error al cargar citas:', err);
+    } catch {
       setError('Error al cargar citas');
       setCitas([]);
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, user]);
 
   useEffect(() => {
     fetchCitas();
@@ -93,22 +91,18 @@ export const useDisponibilidadDoctor = () => {
 
   const cargarDisponibilidad = useCallback(async (fecha: string, doctorId?: number) => {
     if (!doctorId) {
-      console.warn('No se proporcionó doctorId para cargar disponibilidad');
       return;
     }
     
     // Evitar llamadas duplicadas
     if (lastRequest?.doctorId === doctorId && lastRequest?.fecha === fecha) {
       if (loading) {
-        console.log('⏳ Llamada en progreso, ignorando duplicada');
         return;
       }
       // Si la misma request ya terminó recientemente, no volver a cargar
-      console.log('🔄 Reutilizando datos existentes');
       return;
     }
     
-    console.log(`🔍 Cargando disponibilidad: doctor ${doctorId}, fecha ${fecha}`);
     setLastRequest({ doctorId, fecha });
     
     try {
@@ -118,8 +112,6 @@ export const useDisponibilidadDoctor = () => {
       
       const disponibilidadData = response.results || response || [];
       setDisponibilidades(disponibilidadData);
-      
-      console.log(`✅ Hook actualizado: ${disponibilidadData.length} slots cargados`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido al cargar disponibilidad';
       setError(errorMessage);

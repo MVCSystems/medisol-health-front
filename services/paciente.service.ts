@@ -56,8 +56,9 @@ class PacienteService {
   }
 
   // Listar pacientes
-  async getAll(): Promise<{ results: Paciente[]; count: number }> {
-    const response = await api.get(`${this.baseUrl}/`);
+  async getAll(incluirInactivos: boolean = false): Promise<{ results: Paciente[]; count: number }> {
+    const params = incluirInactivos ? { incluir_inactivos: 'true' } : {};
+    const response = await api.get(`${this.baseUrl}/`, { params });
     return response.data;
   }
 
@@ -77,9 +78,15 @@ class PacienteService {
     return response.data;
   }
 
-  // Eliminar paciente
+  // Eliminar paciente (soft delete)
   async delete(id: number): Promise<void> {
     await api.delete(`${this.baseUrl}/${id}/`);
+  }
+
+  // Reactivar paciente
+  async reactivar(id: number): Promise<{ detail: string }> {
+    const response = await api.post(`${this.baseUrl}/${id}/reactivar/`);
+    return response.data;
   }
 
   // Buscar pacientes

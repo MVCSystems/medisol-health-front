@@ -275,7 +275,6 @@ export function ClinicaForm({ open, onClose, onSubmit, clinica, loading }: Clini
                   alt="Preview del logo"
                   className="h-20 w-20 object-cover rounded border"
                   onError={() => {
-                    console.error('Error cargando imagen:', logoPreview)
                     setLogoPreview(null)
                   }}
                 />

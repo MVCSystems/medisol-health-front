@@ -266,7 +266,7 @@ export default function HeroSearch() {
                             className="text-xs"
                             style={{ color: "var(--secondary)" }}
                           >
-                            {new Date(item.fecha).toLocaleDateString('es-ES')}
+                            {new Date(item.fecha).toLocaleDateString('es-PE')}
                           </p>
                         </div>
                       </div>

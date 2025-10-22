@@ -10,7 +10,7 @@ import UsuarioForm from "@/components/usuarios/usuario-form";
 import DeleteConfirmDialog from "@/components/usuarios/delete-confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
-import type { Usuario } from "@/types/usuario";
+import type { Usuario, CreateUsuarioData, UpdateUsuarioData } from "@/types/usuario";
 
 export default function UsuariosPage() {
   const { isAdmin } = useAuthStore();
@@ -88,10 +88,7 @@ export default function UsuariosPage() {
     setShowDeleteDialog(true);
   };
 
-  const handleViewClick = (usuario: Usuario) => {
-    // Implementar vista detallada si es necesario
-    console.log("Ver usuario:", usuario);
-  };
+
 
   const handleToggleStatus = async (usuario: Usuario) => {
     await toggleUsuarioStatus(usuario.id, !usuario.is_active);
@@ -113,17 +110,17 @@ export default function UsuariosPage() {
     }
   };
 
-  const handleCreateSubmit = async (data: any) => {
-    const result = await createUsuario(data);
+  const handleCreateSubmit = async (data: CreateUsuarioData | UpdateUsuarioData) => {
+    const result = await createUsuario(data as CreateUsuarioData);
     if (result) {
       setShowCreateForm(false);
     }
     return result;
   };
 
-  const handleEditSubmit = async (data: any) => {
+  const handleEditSubmit = async (data: CreateUsuarioData | UpdateUsuarioData) => {
     if (selectedUsuario) {
-      const result = await updateUsuario(selectedUsuario.id, data);
+      const result = await updateUsuario(selectedUsuario.id, data as UpdateUsuarioData);
       if (result) {
         setShowEditForm(false);
         setSelectedUsuario(null);
@@ -142,7 +139,7 @@ export default function UsuariosPage() {
       usuario.email?.toLowerCase().includes(search.toLowerCase());
 
     const matchesRole = roleFilter === "ALL" || 
-      usuario.roles?.some((role: any) => role.rol_nombre === roleFilter);
+      usuario.roles?.some((role: { rol_nombre: string }) => role.rol_nombre === roleFilter);
 
     const matchesStatus = statusFilter === "ALL" ||
       (statusFilter === "ACTIVE" && usuario.is_active) ||
@@ -231,7 +228,6 @@ export default function UsuariosPage() {
               usuario={usuario}
               onEdit={handleEditClick}
               onDelete={handleDeleteClick}
-              onView={handleViewClick}
               onToggleStatus={handleToggleStatus}
             />
           ))}

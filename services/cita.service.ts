@@ -1,5 +1,4 @@
 import { api } from '@/lib/axios';
-import { doctorService } from './doctor.service';
 import { AxiosError } from 'axios';
 
 interface RawCitaData {
@@ -31,7 +30,7 @@ interface RawCitaData {
 export interface CitaCreateData {
   clinica: number;
   doctor: number;
-  paciente?: number;
+  paciente: number;
   disponibilidad_id?: number;
   fecha: string;
   hora_inicio: string;
@@ -41,13 +40,6 @@ export interface CitaCreateData {
   notas?: string;
   precio_consulta?: number;
   descuento?: number;
-  paciente_datos?: {
-    nombres: string;
-    apellidos: string;
-    email: string;
-    telefono: string;
-    dni: string;
-  };
   tipo_cita?: string;
 }
 
@@ -64,31 +56,10 @@ export interface CitaFilters {
 export const citaService = {
   getCitas: async (filters?: CitaFilters) => {
     try {
-      console.log('🔍 Solicitando citas con filtros:', filters);
       const response = await api.get('/api/clinicas/citas/', { params: filters });
-      console.log('📦 Respuesta completa del backend:', response.data);
       const citasData = response.data.results || [];
-      
-      // Obtener detalles de doctores
-      const doctorPromises = citasData.map((cita: RawCitaData) =>
-        doctorService.getDoctor(cita.doctor)
-          .catch(error => {
-            console.error(`Error al obtener detalles del doctor ${cita.doctor}:`, error);
-            return null;
-          })
-      );
 
-      const doctores = await Promise.all(doctorPromises);
-      console.log('👨‍⚕️ Detalles de doctores obtenidos:', doctores);
-
-      // Procesar las citas con los detalles de los doctores
-      const citasProcesadas = citasData.map((cita: RawCitaData, index: number) => {
-        const doctor = doctores[index];
-        console.log(`🏥 Procesando cita ${cita.id}:`, {
-          datosOriginales: cita,
-          detallesDoctor: doctor
-        });
-
+      const citasProcesadas = citasData.map((cita: RawCitaData) => {
         return {
           id: cita.id,
           fecha: cita.fecha,
@@ -119,7 +90,53 @@ export const citaService = {
         };
       });
 
-      console.log('✅ Citas procesadas:', citasProcesadas);
+      return {
+        count: response.data.count,
+        next: response.data.next,
+        previous: response.data.previous,
+        results: citasProcesadas
+      };
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getMisCitas: async (filters?: CitaFilters) => {
+    try {
+      // Usar el endpoint regular /citas/ que filtra automáticamente por usuario en el backend
+      const response = await api.get('/api/clinicas/citas/', { params: filters });
+      const citasData = response.data.results || [];
+
+      const citasProcesadas = citasData.map((cita: RawCitaData) => {
+        return {
+          id: cita.id,
+          fecha: cita.fecha,
+          hora_inicio: cita.hora_inicio,
+          hora_fin: cita.hora_fin,
+          estado: cita.estado,
+          motivo: cita.motivo,
+          notas: cita.notas,
+          precio_consulta: parseFloat(cita.precio_consulta),
+          precio_total: parseFloat(cita.precio_total),
+          descuento: parseFloat(cita.descuento || '0'),
+          doctor: {
+            id: cita.doctor,
+            nombres: cita.doctor_nombre?.split(' ')[0] || '',
+            apellidos: cita.doctor_nombre?.split(' ').slice(1).join(' ') || '',
+            especialidades: cita.doctor_especialidades || []
+          },
+          paciente: {
+            id: cita.paciente,
+            nombres: cita.paciente_nombre?.split(' ')[0] || '',
+            apellidos: cita.paciente_nombre?.split(' ').slice(1).join(' ') || '',
+            numero_documento: cita.paciente_documento || ''
+          },
+          clinica: {
+            id: cita.clinica,
+            nombre: cita.clinica_nombre
+          }
+        };
+      });
 
       return {
         count: response.data.count,
@@ -128,14 +145,13 @@ export const citaService = {
         results: citasProcesadas
       };
     } catch (error) {
-      console.error('Error al obtener citas:', error);
       throw error;
     }
   },
 
   createCita: async (data: CitaCreateData) => {
     try {
-      const citaApiData = {
+      const citaApiData: CitaCreateData = {
         clinica: Number(data.clinica),
         doctor: Number(data.doctor),
         paciente: Number(data.paciente),
@@ -143,19 +159,28 @@ export const citaService = {
         hora_inicio: data.hora_inicio.length === 5 ? data.hora_inicio + ':00' : data.hora_inicio,
         hora_fin: data.hora_fin.length === 5 ? data.hora_fin + ':00' : data.hora_fin,
         motivo: data.motivo?.trim() || '',
-        estado: 'PENDIENTE',
-        notas: data.notas || ''
+        estado: data.estado || 'PENDIENTE',
+        notas: data.notas || '',
+        precio_consulta: data.precio_consulta || 0,
+        descuento: data.descuento || 0
       };
 
       const response = await api.post('/api/clinicas/citas/', citaApiData);
       return response.data;
     } catch (error) {
-      if (error instanceof AxiosError && error.response?.status === 400) {
-        if (error.response.data.paciente) {
-          throw new Error('Ya tienes una cita registrada para este horario. Por favor selecciona otro horario disponible.');
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 400) {
+          if (error.response.data.paciente) {
+            throw new Error('Ya tienes una cita registrada para este horario. Por favor selecciona otro horario disponible.');
+          }
+          const errorMsg = JSON.stringify(error.response.data);
+          throw new Error(`Error de validación: ${errorMsg}`);
+        }
+        
+        if (error.response?.status === 500) {
+          throw new Error('Error interno del servidor. Por favor contacta al administrador.');
         }
       }
-      console.error('Error al crear cita:', error);
       throw error;
     }
   },
@@ -165,7 +190,6 @@ export const citaService = {
       const response = await api.get(`/api/clinicas/citas/${id}/`);
       return response.data;
     } catch (error) {
-      console.error('Error al obtener cita:', error);
       throw error;
     }
   },
@@ -175,7 +199,6 @@ export const citaService = {
       const response = await api.put(`/api/clinicas/citas/${id}/`, data);
       return response.data;
     } catch (error) {
-      console.error('Error al actualizar cita:', error);
       throw error;
     }
   },
@@ -188,7 +211,6 @@ export const citaService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error al cancelar cita:', error);
       throw error;
     }
   },
@@ -200,7 +222,17 @@ export const citaService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error al confirmar cita:', error);
+      throw error;
+    }
+  },
+
+  cambiarEstado: async (id: number, nuevoEstado: string) => {
+    try {
+      const response = await api.post(`/api/clinicas/citas/${id}/cambiar_estado/`, {
+        estado: nuevoEstado
+      });
+      return response.data;
+    } catch (error) {
       throw error;
     }
   },
@@ -210,14 +242,12 @@ export const citaService = {
       const response = await api.delete(`/api/clinicas/citas/${id}/`);
       return response.data;
     } catch (error) {
-      console.error('Error al eliminar cita:', error);
       throw error;
     }
   },
 
   getDisponibilidadDoctor: async (doctorId: number, fecha: string) => {
     try {
-      console.log(`🔍 Buscando disponibilidad para doctor ${doctorId} en fecha ${fecha}`);
       const response = await api.get('/api/clinicas/disponibilidad/', {
         params: {
           doctor: doctorId,
@@ -227,14 +257,12 @@ export const citaService = {
       });
       return response.data;
     } catch (error) {
-      console.error('Error al obtener disponibilidad:', error);
       throw error;
     }
   },
 
   reservarSlot: async (disponibilidadId: number, citaData: CitaCreateData) => {
     try {
-      console.log(`🎯 Reservando slot ${disponibilidadId}`, citaData);
       const citaCompleta = {
         ...citaData,
         disponibilidad: disponibilidadId
@@ -242,7 +270,6 @@ export const citaService = {
       const response = await api.post('/api/clinicas/citas/', citaCompleta);
       return response.data;
     } catch (error) {
-      console.error('Error al reservar slot:', error);
       throw error;
     }
   }

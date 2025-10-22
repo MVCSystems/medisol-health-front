@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Plus, AlertCircle, Edit3, Trash2 } from 'lucide-react';
 import { useHorarios, useDisponibilidad } from '@/hooks/useHorarios';
 import { doctorService } from '@/services/doctor.service';
+import { formatearFecha } from '@/lib/utils';
 import HorarioModal from './HorarioModal';
 import DeleteConfirmModal from './DeleteConfirmModal';
 import type { Doctor, HorarioDoctor } from '@/types/clinicas';
@@ -55,8 +56,8 @@ export default function HorariosManager() {
   const handleGenerarDisponibilidad = async () => {
     if (!doctorSeleccionado) return;
     
-    const fechaInicio = new Date().toISOString().split('T')[0];
-    const fechaFin = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const fechaInicio = formatearFecha(new Date());
+    const fechaFin = formatearFecha(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000));
     
     const success = await generarDisponibilidad(fechaInicio, fechaFin);
     if (success) {
@@ -138,7 +139,7 @@ export default function HorariosManager() {
   };
 
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });

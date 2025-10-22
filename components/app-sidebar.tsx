@@ -6,7 +6,6 @@ import {
   Calendar,
   Users,
   UserCheck,
-  Settings2,
   Heart,
   Clock,
   Activity,
@@ -47,9 +46,8 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
     url: "/dashboard/citas",
     icon: Calendar,
     items: [
-      { title: "Lista de Citas", url: "/dashboard/citas" },
+      { title: isAdmin ? "Lista de Citas" : "Mis Citas", url: "/dashboard/citas" },
       { title: "Reservar Cita", url: "/dashboard/citas/reservar" },
-      ...(isAdmin ? [{ title: "Gestión de Citas", url: "/dashboard/citas/admin" }] : []),
     ],
   });
 
@@ -90,10 +88,6 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
         title: "Chat Médico",
         url: "/chat",
         icon: MessageSquare,
-        items: [
-          { title: "Asistente IA", url: "/chat" },
-          { title: "Comunicación", url: "/chat/general" },
-        ],
       }
     )
   }
@@ -102,34 +96,17 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
   if (isDoctor) {
     navMain.push(
       {
-        title: "Mis Horarios",
+        title: "Mi Agenda",
         url: "/dashboard/horarios",
         icon: Clock,
-      },
-      {
-        title: "Mi Consultorio",
-        url: "/dashboard/horarios",
-        icon: Calendar,
         items: [
           { title: "Mis Horarios", url: "/dashboard/horarios" },
-          { title: "Reservar Citas", url: "/dashboard/citas/reservar" },
-        ],
-      },
-      {
-        title: "Mis Pacientes",
-        url: "/dashboard/pacientes",
-        icon: UserCheck,
-        items: [
-          { title: "Lista de Pacientes", url: "/dashboard/pacientes" },
         ],
       },
       {
         title: "Chat Médico",
         url: "/chat",
         icon: MessageSquare,
-        items: [
-          { title: "Asistente IA", url: "/chat" },
-        ],
       }
     )
   }
@@ -138,21 +115,14 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
   if (isPaciente) {
     navMain.push(
       {
-        title: "Reservar Cita Médica",
-        url: "/dashboard/citas/reservar",
-        icon: Calendar,
-        items: [
-          { title: "Agendar Nueva Cita", url: "/dashboard/citas/reservar" },
-          { title: "Ver Doctores", url: "/dashboard/doctores" },
-        ],
+        title: "Directorio Médico",
+        url: "/dashboard/doctores",
+        icon: Stethoscope,
       },
       {
         title: "Chat Médico",
         url: "/chat",
         icon: MessageSquare,
-        items: [
-          { title: "Consulta Virtual", url: "/chat" },
-        ],
       }
     )
   }
@@ -161,33 +131,28 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
 
   return {
     navMain,
-    navSecondary: [
-      {
-        title: "Configuración",
-        url: "/configuracion",
-        icon: Settings2,
-      },
-    ],
+    navSecondary: [],
     quickActions: isAdmin 
       ? [
           { name: "Gestión Doctores", url: "/dashboard/doctores", icon: Stethoscope },
           { name: "Gestión Pacientes", url: "/dashboard/pacientes", icon: UserCheck },
           { name: "Gestión Clínicas", url: "/dashboard/clinicas", icon: Building2 },
-          { name: "Reservar Citas", url: "/dashboard/citas/reservar", icon: Calendar },
+          { name: "Lista de Citas", url: "/dashboard/citas", icon: Calendar },
         ]
       : isDoctor
       ? [
+          { name: "Mis Citas", url: "/dashboard/citas", icon: Calendar },
           { name: "Mis Horarios", url: "/dashboard/horarios", icon: Clock },
-          { name: "Mis Pacientes", url: "/dashboard/pacientes", icon: UserCheck },
-          { name: "Reservar Citas", url: "/dashboard/citas/reservar", icon: Calendar },
           { name: "Chat Médico", url: "/chat", icon: MessageSquare },
         ]
-      : [
+      : isPaciente
+      ? [
+          { name: "Mis Citas", url: "/dashboard/citas", icon: Calendar },
           { name: "Reservar Cita", url: "/dashboard/citas/reservar", icon: Calendar },
-          { name: "Ver Doctores", url: "/dashboard/doctores", icon: Stethoscope },
+          { name: "Directorio Médico", url: "/dashboard/doctores", icon: Stethoscope },
           { name: "Chat Médico", url: "/chat", icon: MessageSquare },
-          { name: "Dashboard", url: "/dashboard", icon: Activity },
         ]
+      : []
   }
 }
 

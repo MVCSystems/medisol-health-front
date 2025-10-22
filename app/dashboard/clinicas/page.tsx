@@ -57,21 +57,15 @@ export default function ClinicasPage() {
     }
   }
 
-  const handleFormSubmit = async (data: any) => {
-    let success = false
-    
-    if (editingClinica) {
-      const result = await updateClinica(editingClinica.id, data)
-      success = !!result
-    } else {
-      const result = await createClinica(data)
-      success = !!result
-    }
+  const handleFormSubmit = async (data: unknown) => {
+    const success = editingClinica
+      ? !!(await updateClinica(editingClinica.id, data as never))
+      : !!(await createClinica(data as never));
 
     if (success) {
-      handleFormClose()
+      handleFormClose();
     }
-  }
+  };
 
   return (
     <div className="space-y-6">

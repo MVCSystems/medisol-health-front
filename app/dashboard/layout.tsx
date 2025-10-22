@@ -14,19 +14,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const [hydrated, setHydrated] = useState(false)
 
-  // Espera a que zustand hidrate el estado
   useEffect(() => {
     setHydrated(true)
   }, [])
 
-  // Redirige si no hay usuario autenticado (solo después de hidratar)
   useEffect(() => {
     if (hydrated && !isAuthenticated) {
       router.replace("/auth/login")
     }
   }, [hydrated, isAuthenticated, router])
 
-  // Muestra toast de login solo una vez
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("showLoginToast")) {
       toast.success("Sesión iniciada")
@@ -35,7 +32,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [])
 
   if (!hydrated) {
-    // Puedes mostrar un loader si quieres
     return null
   }
 

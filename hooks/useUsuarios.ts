@@ -118,11 +118,13 @@ export function useUsuarios() {
       // Actualizar cache local
       await mutateUsuarios();
       
-      toast.success('Usuario eliminado exitosamente');
+      toast.success('Usuario desactivado exitosamente', {
+        description: 'El usuario ya no podrá acceder al sistema'
+      });
       return true;
     } catch (error: unknown) {
       const apiError = error as ApiError;
-      const message = apiError?.response?.data?.detail || 'Error al eliminar usuario';
+      const message = apiError?.response?.data?.detail || 'Error al desactivar usuario';
       toast.error(message);
       return false;
     } finally {

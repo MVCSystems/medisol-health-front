@@ -6,6 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { CitaWithDetails } from "@/types/citas";
+import { formatearFechaDisplay } from "@/lib/utils";
 
 interface DetallesCitaProps {
   cita: CitaWithDetails | null;
@@ -16,17 +17,8 @@ interface DetallesCitaProps {
 export function DetallesCita({ cita, isOpen, onClose }: DetallesCitaProps) {
   if (!cita) return null;
 
-  const formatearFecha = (fecha: string) => {
-    return new Date(fecha).toLocaleDateString('es-ES', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
   const formatearHora = (hora: string) => {
-    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-ES', {
+    return new Date(`2000-01-01T${hora}`).toLocaleTimeString('es-PE', {
       hour: '2-digit',
       minute: '2-digit'
     });
@@ -44,7 +36,7 @@ export function DetallesCita({ cita, isOpen, onClose }: DetallesCitaProps) {
         <div className="grid gap-4 py-4">
           <div>
             <h3 className="font-semibold mb-1">Fecha y Hora</h3>
-            <p>{formatearFecha(cita.fecha)}</p>
+            <p>{formatearFechaDisplay(cita.fecha)}</p>
             <p className="text-sm text-muted-foreground">
               {formatearHora(cita.hora_inicio)} - {formatearHora(cita.hora_fin)}
             </p>

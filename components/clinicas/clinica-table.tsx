@@ -47,7 +47,7 @@ export function ClinicaTable({ clinicas, loading, onEdit, onDelete }: ClinicaTab
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES')
+    return new Date(dateString).toLocaleDateString('es-PE')
   }
 
   return (
