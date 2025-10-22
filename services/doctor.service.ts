@@ -42,6 +42,19 @@ export interface DoctorRegistroResponse {
 class DoctorService {
   private baseUrl = '/api/clinicas/doctores';
 
+  // Obtener detalles de un doctor
+  async getDoctor(id: number): Promise<Doctor | null> {
+    try {
+      console.log('🔍 Obteniendo detalles del doctor:', id);
+      const response = await api.get(`${this.baseUrl}/${id}/`);
+      console.log('📋 Respuesta del doctor:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error al obtener detalles del doctor:', error);
+      return null;
+    }
+  }
+
   // Crear doctor con usuario automático
   async registrar(data: DoctorCreateData): Promise<DoctorRegistroResponse> {
     const formData = new FormData();

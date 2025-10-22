@@ -32,6 +32,7 @@ export default function ReservaCitas() {
   const { crearCita, loading: loadingCita } = useCitas();
   const { 
     disponibilidades, 
+    citasExistentes,
     loading: loadingDisponibilidad, 
     cargarDisponibilidad 
   } = useDisponibilidadDoctor();
@@ -60,25 +61,25 @@ export default function ReservaCitas() {
 
     try {
       // Crear objeto compatible con CitaCreateData
+      console.log('Doctor seleccionado:', doctorSeleccionado);
+      console.log('Slot seleccionado:', slotSeleccionado);
+
       const citaData = {
-        clinica: doctorSeleccionado.clinica, // ID de la clínica
+        clinica: doctorSeleccionado.clinica,
         doctor: doctorSeleccionado.id,
-        disponibilidad_id: slotSeleccionado.id,
         fecha: slotSeleccionado.fecha,
         hora_inicio: slotSeleccionado.hora_inicio,
         hora_fin: slotSeleccionado.hora_fin,
-        motivo: datosCita.motivo_consulta,
-        notas: datosCita.observaciones,
-        precio_consulta: doctorSeleccionado.precio_consulta_base,
-        // Información del paciente - esto debería ser manejado en el backend
+        motivo: datosCita.motivo_consulta.trim(),
+        disponibilidad_id: slotSeleccionado.id, // ID del slot de disponibilidad
+        // Información del paciente
         paciente_datos: {
-          nombres: datosCita.paciente_nombre,
-          apellidos: datosCita.paciente_apellido,
-          email: datosCita.paciente_email,
-          telefono: datosCita.paciente_telefono,
-          dni: datosCita.paciente_dni
-        },
-        tipo_cita: datosCita.tipo_cita
+          nombres: datosCita.paciente_nombre.trim(),
+          apellidos: datosCita.paciente_apellido.trim(),
+          email: datosCita.paciente_email.trim().toLowerCase(),
+          telefono: datosCita.paciente_telefono.trim(),
+          dni: datosCita.paciente_dni.trim()
+        }
       };
       
       await crearCita(citaData);
@@ -276,6 +277,7 @@ export default function ReservaCitas() {
             fechaSeleccionada={fechaSeleccionada}
             onFechaSeleccionada={setFechaSeleccionada}
             disponibilidades={disponibilidades}
+            citasExistentes={citasExistentes}
             loading={loadingDisponibilidad}
             onSlotSeleccionado={handleSeleccionarSlot}
           />

@@ -41,6 +41,18 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
     isActive: true,
   })
 
+  // Citas Médicas - Disponible para todos los roles
+  navMain.push({
+    title: "Citas Médicas",
+    url: "/dashboard/citas",
+    icon: Calendar,
+    items: [
+      { title: "Lista de Citas", url: "/dashboard/citas" },
+      { title: "Reservar Cita", url: "/dashboard/citas/reservar" },
+      ...(isAdmin ? [{ title: "Gestión de Citas", url: "/dashboard/citas/admin" }] : []),
+    ],
+  });
+
   // Opciones para ADMIN
   if (isAdmin) {
     navMain.push(
@@ -75,15 +87,6 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
         ],
       },
       {
-        title: "Citas Médicas",
-        url: "/dashboard/citas",
-        icon: Calendar,
-        items: [
-          { title: "Reservar Cita", url: "/dashboard/citas/reservar" },
-          { title: "Gestión de Citas", url: "/dashboard/citas" },
-        ],
-      },
-      {
         title: "Chat Médico",
         url: "/chat",
         icon: MessageSquare,
@@ -95,9 +98,14 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
     )
   }
 
-  // Opciones para DOCTOR
+  // Opciones específicas para DOCTOR
   if (isDoctor) {
     navMain.push(
+      {
+        title: "Mis Horarios",
+        url: "/dashboard/horarios",
+        icon: Clock,
+      },
       {
         title: "Mi Consultorio",
         url: "/dashboard/horarios",

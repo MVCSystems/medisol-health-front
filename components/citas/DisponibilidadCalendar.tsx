@@ -13,6 +13,7 @@ interface DisponibilidadCalendarProps {
   disponibilidades: DisponibilidadCita[];
   loading: boolean;
   onSlotSeleccionado: (slot: DisponibilidadCita) => void;
+  citasExistentes?: DisponibilidadCita[];
 }
 
 export default function DisponibilidadCalendar({
@@ -21,7 +22,8 @@ export default function DisponibilidadCalendar({
   onFechaSeleccionada,
   disponibilidades,
   loading,
-  onSlotSeleccionado
+  onSlotSeleccionado,
+  citasExistentes = []
 }: DisponibilidadCalendarProps) {
   const [mesActual, setMesActual] = useState(new Date());
 
@@ -91,8 +93,16 @@ export default function DisponibilidadCalendar({
   };
 
   const fechas = generarFechasDelMes();
+  // Verificar si un slot está ocupado
+  const esSlotOcupado = (slot: DisponibilidadCita) => {
+    return citasExistentes?.some(cita => 
+      cita.fecha === slot.fecha && 
+      cita.hora_inicio === slot.hora_inicio
+    ) ?? false;
+  };
+
   const slotsDelDia = disponibilidades.filter(d => 
-    d.fecha === fechaSeleccionada && d.disponible
+    d.fecha === fechaSeleccionada && (d.disponible || esSlotOcupado(d))
   );
 
   const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
@@ -210,22 +220,35 @@ export default function DisponibilidadCalendar({
               </div>
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                {slotsDelDia.map((slot) => (
-                  <Button
-                    key={slot.id}
-                    variant="outline"
-                    size="sm"
-                    className="h-auto p-3 flex flex-col items-center gap-1 border-border bg-card text-card-foreground hover:bg-secondary hover:text-secondary-foreground hover:border-secondary transition-all duration-200"
-                    onClick={() => onSlotSeleccionado(slot)}
-                  >
-                    <span className="font-medium text-foreground">
-                      {formatearHora(slot.hora_inicio)}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatearHora(slot.hora_fin)}
-                    </span>
-                  </Button>
-                ))}
+                {slotsDelDia.map((slot) => {
+                  const ocupado = esSlotOcupado(slot);
+                  return (
+                    <Button
+                      key={slot.id}
+                      variant="outline"
+                      size="sm"
+                      className={`
+                        h-auto p-3 flex flex-col items-center gap-1 border-border transition-all duration-200
+                        ${ocupado 
+                          ? 'bg-red-50 text-red-500 border-red-200 cursor-not-allowed hover:bg-red-50 hover:text-red-500 hover:border-red-200' 
+                          : 'bg-card text-card-foreground hover:bg-secondary hover:text-secondary-foreground hover:border-secondary'
+                        }
+                      `}
+                      onClick={() => !ocupado && onSlotSeleccionado(slot)}
+                      disabled={ocupado}
+                    >
+                      <span className="font-medium text-foreground">
+                        {formatearHora(slot.hora_inicio)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {formatearHora(slot.hora_fin)}
+                      </span>
+                      {ocupado && (
+                        <span className="text-xs text-red-500 mt-1">No disponible</span>
+                      )}
+                    </Button>
+                  );
+                })}
               </div>
             )}
           </CardContent>
@@ -235,7 +258,7 @@ export default function DisponibilidadCalendar({
       {/* Leyenda */}
       <div className="flex flex-wrap gap-4 text-xs text-gray-600">
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-green-50 border-2 border-green-200 rounded"></div>
+          <div className="w-3 h-3 bg-card border border-border rounded"></div>
           <span>Disponible</span>
         </div>
         <div className="flex items-center gap-2">
@@ -243,8 +266,12 @@ export default function DisponibilidadCalendar({
           <span>Seleccionado</span>
         </div>
         <div className="flex items-center gap-2">
+          <div className="w-3 h-3 bg-red-50 border border-red-200 rounded"></div>
+          <span>Ya reservado</span>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="w-3 h-3 bg-gray-50 rounded"></div>
-          <span>No disponible</span>
+          <span>Sin horarios</span>
         </div>
       </div>
     </div>

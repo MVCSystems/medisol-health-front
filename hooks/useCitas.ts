@@ -1,30 +1,49 @@
 import { useState, useEffect, useCallback } from 'react';
 import { citaService, CitaCreateData, CitaFilters } from '@/services/cita.service';
-import type { Cita, DisponibilidadCita } from '@/types/clinicas';
+import type { DisponibilidadCita } from '@/types/clinicas';
+import type { CitaWithDetails } from '@/types/citas';
 
 export const useCitas = (filters?: CitaFilters) => {
-  const [citas, setCitas] = useState<Cita[]>([]);
+  const [citas, setCitas] = useState<CitaWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const cargarCitas = useCallback(async () => {
+  const fetchCitas = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('🔍 Buscando citas con filtros:', filters);
+      
       const response = await citaService.getCitas(filters);
-      setCitas(response.results || response || []);
+      console.log('📦 Respuesta completa:', {
+        total: response.count,
+        citas: response.results
+      });
+      
+      if (response.results) {
+        console.log('🩺 Primera cita ejemplo:', response.results[0]);
+        setCitas(response.results);
+      } else {
+        console.warn('⚠️ No se encontraron citas');
+        setCitas([]);
+      }
     } catch (err) {
+      console.error('❌ Error al cargar citas:', err);
       setError('Error al cargar citas');
-      console.error('Error al cargar citas:', err);
+      setCitas([]);
     } finally {
       setLoading(false);
     }
   }, [filters]);
 
+  useEffect(() => {
+    fetchCitas();
+  }, [fetchCitas]);
+
   const crearCita = async (data: CitaCreateData) => {
     try {
       const result = await citaService.createCita(data);
-      await cargarCitas(); // Recargar lista
+      await fetchCitas();
       return { success: true, data: result };
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al crear cita';
@@ -35,7 +54,7 @@ export const useCitas = (filters?: CitaFilters) => {
   const confirmarCita = async (id: number) => {
     try {
       await citaService.confirmarCita(id);
-      await cargarCitas(); // Recargar lista
+      await fetchCitas();
       return { success: true };
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al confirmar cita';
@@ -46,17 +65,13 @@ export const useCitas = (filters?: CitaFilters) => {
   const cancelarCita = async (id: number, razon?: string) => {
     try {
       await citaService.cancelarCita(id, razon);
-      await cargarCitas(); // Recargar lista
+      await fetchCitas();
       return { success: true };
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Error al cancelar cita';
       return { success: false, error: errorMsg };
     }
   };
-
-  useEffect(() => {
-    cargarCitas();
-  }, [cargarCitas]);
 
   return {
     citas,
@@ -65,15 +80,16 @@ export const useCitas = (filters?: CitaFilters) => {
     crearCita,
     confirmarCita,
     cancelarCita,
-    refetch: cargarCitas
+    refetch: fetchCitas
   };
 };
-
 export const useDisponibilidadDoctor = () => {
   const [disponibilidades, setDisponibilidades] = useState<DisponibilidadCita[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRequest, setLastRequest] = useState<{doctorId: number, fecha: string} | null>(null);
+
+  const [citasExistentes, setCitasExistentes] = useState<DisponibilidadCita[]>([]);
 
   const cargarDisponibilidad = useCallback(async (fecha: string, doctorId?: number) => {
     if (!doctorId) {
@@ -128,8 +144,36 @@ export const useDisponibilidadDoctor = () => {
     }
   }, [cargarDisponibilidad]);
 
+  // Cargar citas existentes
+  const cargarCitasExistentes = useCallback(async (fecha: string, doctorId: number) => {
+    try {
+      const response = await citaService.getCitas({
+        doctor: doctorId,
+        fecha,
+        estado: 'PENDIENTE'
+      });
+      setCitasExistentes(response.results.map((cita: CitaWithDetails) => ({
+        id: cita.id,
+        doctor: cita.doctor,
+        fecha: cita.fecha,
+        hora_inicio: cita.hora_inicio,
+        hora_fin: cita.hora_fin,
+        disponible: false
+      })));
+    } catch (error) {
+      console.error('Error al cargar citas existentes:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (lastRequest?.doctorId && lastRequest?.fecha) {
+      cargarCitasExistentes(lastRequest.fecha, lastRequest.doctorId);
+    }
+  }, [lastRequest, cargarCitasExistentes]);
+
   return {
     disponibilidades,
+    citasExistentes,
     loading,
     error,
     cargarDisponibilidad,

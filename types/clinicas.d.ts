@@ -36,6 +36,24 @@ export interface UpdateClinicaData {
 }
 
 // Tipos para respuestas paginadas
+// Tipos para doctores
+export interface Doctor {
+  id: number;
+  nombres: string;
+  apellidos: string;
+  especialidades: Array<{
+    id: number;
+    nombre: string;
+  }>;
+  titulo: string;
+  biografia?: string;
+  foto?: string;
+  precio_consulta_base: string;
+  activo: boolean;
+  clinica: number;
+  usuario: number;
+}
+
 export interface PaginatedResponse<T> {
   count: number;
   next: string | null;
