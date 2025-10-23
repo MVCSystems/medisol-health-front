@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ import ReservaCitaModal, { DatosCitaReserva } from './ReservaCitaModal';
 import { pacienteService } from '@/services/paciente.service';
 
 export default function ReservaCitas() {
+  const router = useRouter();
   const [busqueda, setBusqueda] = useState('');
   const [doctorSeleccionado, setDoctorSeleccionado] = useState<Doctor | null>(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState('');
@@ -101,6 +103,9 @@ export default function ReservaCitas() {
       setPaso('doctores');
       setDoctorSeleccionado(null);
       setFechaSeleccionada('');
+      
+      // Redirigir al listado de citas
+      router.push('/dashboard/citas');
     } catch (error) {
       throw error;
     }

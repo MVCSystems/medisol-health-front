@@ -24,7 +24,13 @@ export function usePacientes() {
       setLoading(true);
       setError(null);
       const data = await pacienteService.getAll(mostrarInactivos);
-      setPacientes(data.results);
+      
+      // Si se pide mostrar inactivos, filtrar SOLO los inactivos
+      if (mostrarInactivos) {
+        setPacientes(data.results.filter(p => !p.activo));
+      } else {
+        setPacientes(data.results);
+      }
     } catch (error) {
       console.error('Error al cargar pacientes:', error);
       setError('Error al cargar la lista de pacientes');

@@ -24,7 +24,13 @@ export function useDoctores() {
       setLoading(true);
       setError(null);
       const data = await doctorService.getAll(mostrarInactivos);
-      setDoctores(data.results);
+      
+      // Si se pide mostrar inactivos, filtrar SOLO los inactivos
+      if (mostrarInactivos) {
+        setDoctores(data.results.filter(d => !d.activo));
+      } else {
+        setDoctores(data.results);
+      }
     } catch {
       setError('Error al cargar la lista de doctores');
       toast.error('Error al cargar doctores');

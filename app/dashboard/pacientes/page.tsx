@@ -117,12 +117,12 @@ export default function PacientesPage() {
                 <Label htmlFor="incluir-inactivos" className="flex items-center gap-2 cursor-pointer">
                   {incluirInactivos ? (
                     <>
-                      <Eye className="h-4 w-4" />
-                      <span>Mostrando pacientes activos e inactivos</span>
+                      <EyeOff className="h-4 w-4" />
+                      <span>Mostrando solo pacientes inactivos</span>
                     </>
                   ) : (
                     <>
-                      <EyeOff className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                       <span>Mostrando solo pacientes activos</span>
                     </>
                   )}

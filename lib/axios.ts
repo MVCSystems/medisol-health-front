@@ -38,23 +38,30 @@ api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const { tokens, setTokens } = useAuthStore.getState();
     
+    console.log('Interceptor - tokens:', tokens);
+    
     if (!tokens.access) {
+      console.log('Interceptor - No hay token de acceso');
       return config;
     }
 
     if (isTokenExpired(tokens.access) && tokens.refresh) {
+      console.log('Interceptor - Token expirado, refrescando...');
       try {
         const refreshResponse = await axios.post(`${siteConfig.backend_url}/api/token/refresh/`, {
           refresh: tokens.refresh,
         });
         setTokens(refreshResponse.data.access, tokens.refresh);
         config.headers.Authorization = `Bearer ${refreshResponse.data.access}`;
+        console.log('Interceptor - Token refrescado');
       } catch (error) {
+        console.log('Interceptor - Error al refrescar token');
         handleLogout();
         return Promise.reject(error);
       }
     } else {
       config.headers.Authorization = `Bearer ${tokens.access}`;
+      console.log('Interceptor - Token agregado a headers');
     }
     return config;
   },
