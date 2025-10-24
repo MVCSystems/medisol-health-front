@@ -1,75 +1,78 @@
 import { siteConfig } from "@/config";
 import { useAuthStore } from "@/store/authStore";
 
-// Tipos para WebSocket
 type MessageHandler = (data: Record<string, unknown>) => void;
 type ConnectionHandler = () => void;
 
-// Clase para manejar conexiones WebSocket
 class WebSocketService {
   private socket: WebSocket | null = null;
   private reconnectAttempts = 0;
-  private maxReconnectAttempts = 5;
+  private readonly maxReconnectAttempts = 5;
+  private readonly connectionTimeout = 10000;
   private reconnectTimeout: NodeJS.Timeout | null = null;
-  private messageHandlers: Map<string, MessageHandler[]> = new Map();
+  private connectionTimeoutId: NodeJS.Timeout | null = null;
+  private messageHandlers = new Map<string, MessageHandler[]>();
   private connectionHandlers: ConnectionHandler[] = [];
   private disconnectionHandlers: ConnectionHandler[] = [];
-  private url: string;
+  private readonly url: string;
   private shouldReconnect = true;
 
   constructor(path: string) {
-    this.url = `${siteConfig.backend_url.replace('http', 'ws')}${path}`;
+    this.url = `${siteConfig.backend_url.replace(/^http/, 'ws')}${path}`;
   }
 
   public connect(): Promise<void> {
     return new Promise((resolve, reject) => {
-      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      if (this.socket?.readyState === WebSocket.OPEN) {
         resolve();
         return;
       }
 
-      // Resetear flag de reconexión al conectar manualmente
       this.shouldReconnect = true;
-
-      // Obtenemos el token de autenticación
       const { tokens } = useAuthStore.getState();
-      const wsUrl = tokens.access 
-        ? `${this.url}?token=${tokens.access}` 
-        : this.url;
+      const wsUrl = tokens.access ? `${this.url}?token=${tokens.access}` : this.url;
 
       this.socket = new WebSocket(wsUrl);
 
+      this.connectionTimeoutId = setTimeout(() => {
+        if (this.socket?.readyState !== WebSocket.OPEN) {
+          this.socket?.close();
+          reject(new Error('Connection timeout'));
+        }
+      }, this.connectionTimeout);
+
       this.socket.onopen = () => {
+        this.clearConnectionTimeout();
         this.reconnectAttempts = 0;
         this.connectionHandlers.forEach(handler => handler());
         resolve();
       };
 
       this.socket.onclose = () => {
+        this.clearConnectionTimeout();
         this.disconnectionHandlers.forEach(handler => handler());
         
-        // Reconexión automática solo si shouldReconnect es true
         if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
+          const delay = 3000 * this.reconnectAttempts;
           this.reconnectTimeout = setTimeout(() => {
             this.connect().catch(() => {});
-          }, 3000 * this.reconnectAttempts);
+          }, delay);
         }
       };
 
-      this.socket.onerror = (error) => {
-        reject(error);
+      this.socket.onerror = () => {
+        this.clearConnectionTimeout();
+        reject(new Error('WebSocket connection failed'));
       };
 
       this.socket.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          const messageType = data.type || 'message';
-          
-          const handlers = this.messageHandlers.get(messageType) || [];
+          const handlers = this.messageHandlers.get(data.type || 'message') || [];
           handlers.forEach(handler => handler(data));
         } catch {
-          // Silently fail on parse error
+          // Ignore parse errors
         }
       };
     });
@@ -77,12 +80,8 @@ class WebSocketService {
 
   public disconnect(): void {
     this.shouldReconnect = false;
+    this.clearTimeouts();
     
-    if (this.reconnectTimeout) {
-      clearTimeout(this.reconnectTimeout);
-      this.reconnectTimeout = null;
-    }
-
     if (this.socket) {
       this.socket.close();
       this.socket = null;
@@ -90,56 +89,60 @@ class WebSocketService {
   }
 
   public send(data: Record<string, unknown>): void {
-    if (!this.socket || this.socket.readyState !== WebSocket.OPEN) {
-      this.connect().then(() => {
-        this.socket?.send(JSON.stringify(data));
-      }).catch(() => {
-        // Failed to send
-      });
-      return;
+    if (this.socket?.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(data));
+    } else {
+      this.connect()
+        .then(() => this.socket?.send(JSON.stringify(data)))
+        .catch(() => {});
     }
-
-    this.socket.send(JSON.stringify(data));
   }
 
   public onMessage(type: string, callback: MessageHandler): () => void {
     if (!this.messageHandlers.has(type)) {
       this.messageHandlers.set(type, []);
     }
-
-    const handlers = this.messageHandlers.get(type)!;
-    handlers.push(callback);
-
+    
+    this.messageHandlers.get(type)!.push(callback);
+    
     return () => {
-      const index = handlers.indexOf(callback);
-      if (index !== -1) {
-        handlers.splice(index, 1);
+      const handlers = this.messageHandlers.get(type);
+      if (handlers) {
+        const index = handlers.indexOf(callback);
+        if (index !== -1) handlers.splice(index, 1);
       }
     };
   }
 
-  public onConnect(callback: () => void): () => void {
+  public onConnect(callback: ConnectionHandler): () => void {
     this.connectionHandlers.push(callback);
-    return () => {
-      const index = this.connectionHandlers.indexOf(callback);
-      if (index !== -1) {
-        this.connectionHandlers.splice(index, 1);
-      }
-    };
+    return () => this.removeHandler(this.connectionHandlers, callback);
   }
 
-  public onDisconnect(callback: () => void): () => void {
+  public onDisconnect(callback: ConnectionHandler): () => void {
     this.disconnectionHandlers.push(callback);
-    return () => {
-      const index = this.disconnectionHandlers.indexOf(callback);
-      if (index !== -1) {
-        this.disconnectionHandlers.splice(index, 1);
-      }
-    };
+    return () => this.removeHandler(this.disconnectionHandlers, callback);
+  }
+
+  private clearConnectionTimeout(): void {
+    if (this.connectionTimeoutId) {
+      clearTimeout(this.connectionTimeoutId);
+      this.connectionTimeoutId = null;
+    }
+  }
+
+  private clearTimeouts(): void {
+    this.clearConnectionTimeout();
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+  }
+
+  private removeHandler(handlers: ConnectionHandler[], callback: ConnectionHandler): void {
+    const index = handlers.indexOf(callback);
+    if (index !== -1) handlers.splice(index, 1);
   }
 }
 
-// Instancia para el chatbot WebSocket
-const chatbotWS = new WebSocketService('/ws/chatbot/');
-
-export { WebSocketService, chatbotWS };
+export const chatbotWS = new WebSocketService('/ws/chatbot/');

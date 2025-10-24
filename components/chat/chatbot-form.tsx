@@ -90,7 +90,29 @@ export default function ChatbotPage() {
       })
       .catch((error) => {
         console.error("Error al conectar WebSocket:", error);
+        setConnected(false);
+        // Agregar mensaje informativo si falla la conexión
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            content: "⚠️ El servidor está iniciando, por favor espera unos segundos...",
+            sender: "bot",
+            timestamp: new Date(),
+          },
+        ]);
       });
+
+    // Manejar eventos de conexión
+    const unsubscribeConnect = chatbotWS.onConnect(() => {
+      setConnected(true);
+      console.log("✅ WebSocket conectado");
+    });
+
+    const unsubscribeDisconnect = chatbotWS.onDisconnect(() => {
+      setConnected(false);
+      console.log("❌ WebSocket desconectado");
+    });
 
     // Manejar mensajes recibidos
     const unsubscribeWelcome = chatbotWS.onMessage("bienvenida", (data) => {
@@ -225,6 +247,8 @@ export default function ChatbotPage() {
 
     // Limpiar suscripciones al desmontar
     return () => {
+      unsubscribeConnect();
+      unsubscribeDisconnect();
       unsubscribeWelcome();
       unsubscribeMessage();
       unsubscribeInfo();
