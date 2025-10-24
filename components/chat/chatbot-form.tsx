@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 // ...existing code...
 import { chatbotWS } from "@/lib/websocket";
+import type { DniValidationResult } from "@/types/chatbot";
 
 interface Message {
   id: string;
@@ -177,6 +178,51 @@ export default function ChatbotPage() {
       ]);
     });
 
+    const unsubscribeDniValidado = chatbotWS.onMessage("dni_validado", (data: Record<string, unknown>) => {
+      setIsTyping(false);
+      
+      const validationResult = data as unknown as DniValidationResult;
+      let responseMessage = validationResult.mensaje || "DNI validado";
+      
+      // Si el usuario existe, mostramos sus datos
+      if (validationResult.existe && validationResult.usuario) {
+        const { nombres, apellidos, email, celular } = validationResult.usuario;
+        responseMessage = `¡Perfecto! Encontré tu registro:\n\nNombres: ${nombres}\nApellidos: ${apellidos}\nEmail: ${email}${celular ? `\nCelular: ${celular}` : ''}`;
+      }
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: responseMessage,
+          sender: "bot",
+          timestamp: new Date(),
+          suggestions: validationResult.sugerencias,
+        },
+      ]);
+
+      // Actualizar contexto con la información del usuario
+      if (validationResult.existe && validationResult.usuario) {
+        const usuario = validationResult.usuario;
+        setContext((prev) => ({
+          ...prev,
+          dni_validado: true,
+          usuario_existente: true,
+          nombres: usuario.nombres,
+          apellidos: usuario.apellidos,
+          email: usuario.email,
+          celular: usuario.celular,
+        }));
+      } else if (validationResult.valido && !validationResult.existe) {
+        // DNI válido pero usuario no existe
+        setContext((prev) => ({
+          ...prev,
+          dni_validado: true,
+          usuario_existente: false,
+        }));
+      }
+    });
+
     // Limpiar suscripciones al desmontar
     return () => {
       unsubscribeWelcome();
@@ -184,6 +230,7 @@ export default function ChatbotPage() {
       unsubscribeInfo();
       unsubscribeCitaRegistrada();
       unsubscribeError();
+      unsubscribeDniValidado();
       chatbotWS.disconnect();
     };
   }, []);
