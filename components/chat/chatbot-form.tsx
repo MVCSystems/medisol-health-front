@@ -203,13 +203,16 @@ export default function ChatbotPage() {
     const unsubscribeDniValidado = chatbotWS.onMessage("dni_validado", (data: Record<string, unknown>) => {
       setIsTyping(false);
       
-      const validationResult = data as unknown as DniValidationResult;
+      // El backend envía el resultado dentro de 'data'
+      const validationResult = (data.data || data) as unknown as DniValidationResult;
       let responseMessage = validationResult.mensaje || "DNI validado";
+      let sugerencias = validationResult.sugerencias;
       
-      // Si el usuario existe, mostramos sus datos
+      // Si el usuario existe, mostramos sus datos y preguntamos para quién es la cita
       if (validationResult.existe && validationResult.usuario) {
         const { nombres, apellidos, email, celular } = validationResult.usuario;
-        responseMessage = `¡Perfecto! Encontré tu registro:\n\nNombres: ${nombres}\nApellidos: ${apellidos}\nEmail: ${email}${celular ? `\nCelular: ${celular}` : ''}`;
+        responseMessage = `¡Perfecto! Encontré tu registro:\n\nNombres: ${nombres}\nApellidos: ${apellidos}\nEmail: ${email}${celular ? `\nCelular: ${celular}` : ''}\n\n¿La cita es para ti o para otra persona?`;
+        sugerencias = ["Para mí", "Para otra persona"];
       }
       
       setMessages((prev) => [
@@ -219,7 +222,7 @@ export default function ChatbotPage() {
           content: responseMessage,
           sender: "bot",
           timestamp: new Date(),
-          suggestions: validationResult.sugerencias,
+          suggestions: sugerencias,
         },
       ]);
 
@@ -234,6 +237,16 @@ export default function ChatbotPage() {
           apellidos: usuario.apellidos,
           email: usuario.email,
           celular: usuario.celular,
+          flujo_cita: {
+            fase: 'esperando_confirmacion_usuario',
+            data: {
+              dni_usuario: prev.dni || '',
+              nombres: usuario.nombres,
+              apellidos: usuario.apellidos,
+              email: usuario.email,
+              celular: usuario.celular,
+            }
+          }
         }));
       } else if (validationResult.valido && !validationResult.existe) {
         // DNI válido pero usuario no existe
@@ -241,6 +254,10 @@ export default function ChatbotPage() {
           ...prev,
           dni_validado: true,
           usuario_existente: false,
+          flujo_cita: {
+            fase: 'solicitando_datos_usuario',
+            data: {}
+          }
         }));
       }
     });
@@ -270,15 +287,34 @@ export default function ChatbotPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const mensaje = inputValue;
     setInputValue("");
     setIsTyping(true);
 
+    // Detectar si es un DNI (8 dígitos) y el contexto indica que debe validarlo
+    const esDNI = /^\d{8}$/.test(mensaje.trim());
+    const esperaDNI = !context.dni_validado && !context.usuario_existente;
+
     // Enviar mensaje al WebSocket
-    chatbotWS.send({
-      mensaje: inputValue,
-      contexto: context,
-      accion: "mensaje",
-    });
+    if (esDNI && esperaDNI) {
+      // Guardar DNI en el contexto antes de validar
+      const nuevoContexto = { ...context, dni: mensaje.trim() };
+      setContext(nuevoContexto);
+      
+      // Validar DNI
+      chatbotWS.send({
+        accion: "validar_dni",
+        dni: mensaje.trim(),
+        contexto: nuevoContexto,
+      });
+    } else {
+      // Mensaje normal
+      chatbotWS.send({
+        mensaje: mensaje,
+        contexto: context,
+        accion: "mensaje",
+      });
+    }
   };
 
 
