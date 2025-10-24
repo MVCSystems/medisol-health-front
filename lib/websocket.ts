@@ -15,6 +15,7 @@ class WebSocketService {
   private connectionHandlers: ConnectionHandler[] = [];
   private disconnectionHandlers: ConnectionHandler[] = [];
   private url: string;
+  private shouldReconnect = true;
 
   constructor(path: string) {
     this.url = `${siteConfig.backend_url.replace('http', 'ws')}${path}`;
@@ -26,6 +27,9 @@ class WebSocketService {
         resolve();
         return;
       }
+
+      // Resetear flag de reconexión al conectar manualmente
+      this.shouldReconnect = true;
 
       // Obtenemos el token de autenticación
       const { tokens } = useAuthStore.getState();
@@ -44,14 +48,12 @@ class WebSocketService {
       this.socket.onclose = () => {
         this.disconnectionHandlers.forEach(handler => handler());
         
-        // Reconexión automática
-        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        // Reconexión automática solo si shouldReconnect es true
+        if (this.shouldReconnect && this.reconnectAttempts < this.maxReconnectAttempts) {
           this.reconnectAttempts++;
           this.reconnectTimeout = setTimeout(() => {
             this.connect().catch(() => {});
           }, 3000 * this.reconnectAttempts);
-        } else {
-          reject(new Error('No se pudo establecer conexión WebSocket'));
         }
       };
 
@@ -74,6 +76,8 @@ class WebSocketService {
   }
 
   public disconnect(): void {
+    this.shouldReconnect = false;
+    
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
