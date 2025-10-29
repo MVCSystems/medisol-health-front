@@ -18,7 +18,7 @@ class WebSocketService {
   private shouldReconnect = true;
 
   constructor(path: string) {
-    this.url = `${siteConfig.backend_url.replace(/^http/, 'ws')}${path}`;
+    this.url = `${siteConfig.backend_url.replace(/^https/, 'ws')}${path}`;
   }
 
   public connect(): Promise<void> {
