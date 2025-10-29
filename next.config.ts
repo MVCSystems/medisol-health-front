@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:; connect-src 'self' http://170.81.242.107:9091 ws://170.81.242.107:9091 https:; img-src 'self' data: blob: http: https:;"
+            value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:; connect-src 'self' http://170.81.242.107:9091 ws://170.81.242.107:9091 https: wss://170.81.242.107:9091; img-src 'self' data: blob: http: https:;"
           },
           {
             key: 'Referrer-Policy',
