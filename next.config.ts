@@ -50,7 +50,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:; connect-src 'self' https://ntechs.net.pe:9091 wss://ntechs.net.pe:9091 https:; img-src 'self' data: blob: http: https:;"
+            value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:; connect-src 'self' https://apis.ntechs.net.pe/medisol wss://apis.ntechs.net.pe/medisol https:; img-src 'self' data: blob: http: https:;"
           },
           {
             key: 'Referrer-Policy',
