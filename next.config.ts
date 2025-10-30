@@ -38,21 +38,20 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "Content-Security-Policy",
-            value: `
-              default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:;
-              script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
-              connect-src 'self' https://apis.ntechs.net.pe wss://apis.ntechs.net.pe;
-              img-src 'self' data: blob: https:;
-              frame-src 'self';
-            `.replace(/\s{2,}/g, " "), // compacta espacios
-          },
-          {
-            key: "Referrer-Policy",
-            value: "origin-when-cross-origin",
-          },
-        ],
+  {
+    key: 'Content-Security-Policy',
+    value: `
+      default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:;
+      connect-src 'self' https://apis.ntechs.net.pe/medisol wss://apis.ntechs.net.pe/medisol https:;
+      img-src 'self' data: blob: http: https:;
+      frame-src 'self' https://www.google.com https://www.youtube.com https://player.vimeo.com;
+    `.replace(/\s{2,}/g, ' '),
+  },
+  {
+    key: 'Referrer-Policy',
+    value: 'origin-when-cross-origin',
+  },
+],
       },
     ];
   },
