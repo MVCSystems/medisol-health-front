@@ -2,64 +2,60 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   eslint: {
-    // Ignorar errores de ESLint durante el build (solo para Vercel)
+    // Ignora errores de ESLint durante el build (opcional)
     ignoreDuringBuilds: true,
   },
   typescript: {
-    // Ignorar errores de TypeScript durante el build si es necesario
+    // Mantiene verificación de TypeScript
     ignoreBuildErrors: false,
   },
   images: {
     remotePatterns: [
+      // Servidor local
       {
-        protocol: 'https',
-        hostname: 'medisol-health.onrender.com',
-        pathname: '/media/**',
+        protocol: "http",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/media/**",
       },
       {
-        protocol: 'http',
-        hostname: 'medisol-health.onrender.com',
-        pathname: '/media/**',
+        protocol: "https",
+        hostname: "localhost",
+        port: "8000",
+        pathname: "/media/**",
       },
+      // Tu backend productivo en Nginx
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8000',
-        pathname: '/media/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'localhost',
-        port: '8000',
-        pathname: '/media/**',
-      },
-      // Agregar tu nuevo backend
-      {
-        protocol: 'http',
-        hostname: '170.81.242.107',
-        port: '9091',
-        pathname: '/media/**',
+        protocol: "https",
+        hostname: "apis.ntechs.net.pe",
+        pathname: "/media/**",
       },
     ],
   },
-  // Permitir contenido mixto HTTPS -> HTTP
+
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'Content-Security-Policy',
-            value: "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:; connect-src 'self' https://apis.ntechs.net.pe/medisol wss://apis.ntechs.net.pe/medisol https:; img-src 'self' data: blob: http: https:;"
+            key: "Content-Security-Policy",
+            value: `
+              default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https:;
+              connect-src 'self' https://apis.ntechs.net.pe wss://apis.ntechs.net.pe;
+              img-src 'self' data: blob: https:;
+              frame-src 'self';
+            `.replace(/\s{2,}/g, " "), // compacta espacios
           },
           {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
-          }
-        ]
-      }
-    ]
-  }
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
