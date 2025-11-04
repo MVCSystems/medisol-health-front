@@ -1,180 +1,123 @@
-import { useState, useEffect } from 'react';
-import { pacienteService, type PacienteCreateData, type PacienteRegistroResponse } from '@/services/paciente.service';
-import type { Paciente } from '@/types/clinicas';
-import { toast } from 'sonner';
-
-interface ApiError {
-  response?: {
-    data?: {
-      error?: string;
-      [key: string]: unknown;
-    };
-  };
-}
-
+import { useState, useEffect } from "react";
+import {
+  pacienteService,
+  type PacienteCreateData,
+  type PacienteRegistroResponse,
+} from "@/services/paciente.service";
+import type { Paciente } from "@/types/clinicas";
+import { toast } from "sonner";
 export function usePacientes() {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [incluirInactivos, setIncluirInactivos] = useState(false);
-
-  // Cargar pacientes
-  const cargarPacientes = async (mostrarInactivos: boolean = incluirInactivos) => {
+  const handle = (e: unknown, f: string) =>
+    e instanceof Error ? e.message : f;
+  const cargarPacientes = async (
+    mostrarInactivos: boolean = incluirInactivos
+  ) => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
-      const data = await pacienteService.getAll(mostrarInactivos);
-      
-      // Si se pide mostrar inactivos, filtrar SOLO los inactivos
-      if (mostrarInactivos) {
-        setPacientes(data.results.filter(p => !p.activo));
-      } else {
-        setPacientes(data.results);
-      }
-    } catch (error) {
-      console.error('Error al cargar pacientes:', error);
-      setError('Error al cargar la lista de pacientes');
-      toast.error('Error al cargar pacientes');
-    } finally {
-      setLoading(false);
+      const d = await pacienteService.getAll(mostrarInactivos);
+      setPacientes(
+        mostrarInactivos ? d.results.filter((x) => !x.activo) : d.results
+      );
+    } catch {
+      setError("Error al cargar la lista de pacientes");
+      toast.error("Error al cargar pacientes");
     }
+    setLoading(false);
   };
-
-  // Toggle filtro de inactivos
   const toggleIncluirInactivos = () => {
-    const nuevoEstado = !incluirInactivos;
-    setIncluirInactivos(nuevoEstado);
-    cargarPacientes(nuevoEstado);
+    const n = !incluirInactivos;
+    setIncluirInactivos(n);
+    cargarPacientes(n);
   };
-
-  // Registrar nuevo paciente
-  const registrarPaciente = async (data: PacienteCreateData): Promise<PacienteRegistroResponse | null> => {
+  const registrarPaciente = async (data: PacienteCreateData) => {
+    setError(null);
     try {
-      setError(null);
-      const response = await pacienteService.registrar(data);
-      toast.success('Paciente registrado exitosamente');
-      
-      // Recargar la lista
+      const r = await pacienteService.registrar(data);
+      toast.success("Paciente registrado exitosamente");
       await cargarPacientes();
-      
-      return response;
-    } catch (error) {
-      console.error('Error al registrar paciente:', error);
-      const apiError = error as ApiError;
-      const errorMessage = apiError?.response?.data?.error || 'Error al registrar paciente';
-      setError(errorMessage);
-      toast.error(errorMessage);
+      return r;
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Error al registrar paciente";
+      setError(errorMsg);
+      toast.error(errorMsg);
       return null;
     }
   };
-
-  // Actualizar paciente
-  const actualizarPaciente = async (id: number, data: Partial<PacienteCreateData>): Promise<boolean> => {
+  const actualizarPaciente = async (
+    id: number,
+    data: Partial<PacienteCreateData>
+  ) => {
+    setError(null);
     try {
-      setError(null);
       await pacienteService.update(id, data);
-      toast.success('Paciente actualizado exitosamente');
-      
-      // Recargar la lista
+      toast.success("Paciente actualizado exitosamente");
       await cargarPacientes();
-      
       return true;
-    } catch (error) {
-      console.error('Error al actualizar paciente:', error);
-      const apiError = error as ApiError;
-      const errorMessage = apiError?.response?.data?.error || 'Error al actualizar paciente';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Error al actualizar paciente";
+      setError(errorMsg);
+      toast.error(errorMsg);
       return false;
     }
   };
-
-  // Eliminar paciente
-  const eliminarPaciente = async (id: number): Promise<boolean> => {
+  const eliminarPaciente = async (id: number) => {
+    setError(null);
     try {
-      setError(null);
       await pacienteService.delete(id);
-      toast.success('Paciente desactivado exitosamente', {
-        description: 'El paciente ya no aparecerá en los listados activos'
+      toast.success("Paciente desactivado exitosamente", {
+        description: "El paciente ya no aparecerá en los listados activos",
       });
-      
-      // Recargar la lista
       await cargarPacientes();
-      
       return true;
-    } catch (error) {
-      console.error('Error al desactivar paciente:', error);
-      const apiError = error as ApiError;
-      const errorMessage = String(apiError?.response?.data?.detail || 
-                          apiError?.response?.data?.error || 
-                          'Error al desactivar paciente');
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (e) {
+      setError(handle(e, "Error al desactivar paciente"));
+      toast.error(handle(e, "Error al desactivar paciente"));
       return false;
     }
   };
-
-  // Obtener paciente por ID
-  const obtenerPaciente = async (id: number): Promise<Paciente | null> => {
+  const obtenerPaciente = async (id: number) => {
+    setError(null);
     try {
-      setError(null);
       return await pacienteService.getById(id);
-    } catch (error) {
-      console.error('Error al obtener paciente:', error);
-      const apiError = error as ApiError;
-      const errorMessage = apiError?.response?.data?.error || 'Error al obtener paciente';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (e) {
+      setError(handle(e, "Error al obtener paciente"));
+      toast.error(handle(e, "Error al obtener paciente"));
       return null;
     }
   };
-
-  // Buscar pacientes
-  const buscarPacientes = async (query: string): Promise<Paciente[]> => {
+  const buscarPacientes = async (query: string) => {
+    setError(null);
     try {
-      setError(null);
       return await pacienteService.buscar(query);
-    } catch (error) {
-      console.error('Error al buscar pacientes:', error);
-      const apiError = error as ApiError;
-      const errorMessage = apiError?.response?.data?.error || 'Error al buscar pacientes';
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (e) {
+      setError(handle(e, "Error al buscar pacientes"));
+      toast.error(handle(e, "Error al buscar pacientes"));
       return [];
     }
   };
-
-  // Reactivar paciente
-  const reactivarPaciente = async (id: number): Promise<boolean> => {
+  const reactivarPaciente = async (id: number) => {
+    setError(null);
     try {
-      setError(null);
       await pacienteService.reactivar(id);
-      toast.success('Paciente reactivado exitosamente', {
-        description: 'El paciente y su usuario han sido reactivados'
+      toast.success("Paciente reactivado exitosamente", {
+        description: "El paciente y su usuario han sido reactivados",
       });
-      
-      // Recargar la lista
       await cargarPacientes();
-      
       return true;
-    } catch (error) {
-      console.error('Error al reactivar paciente:', error);
-      const apiError = error as ApiError;
-      const errorMessage = String(apiError?.response?.data?.detail || 
-                          apiError?.response?.data?.error || 
-                          'Error al reactivar paciente');
-      setError(errorMessage);
-      toast.error(errorMessage);
+    } catch (e) {
+      setError(handle(e, "Error al reactivar paciente"));
+      toast.error(handle(e, "Error al reactivar paciente"));
       return false;
     }
   };
-
-  // Cargar pacientes al montar el componente
   useEffect(() => {
     cargarPacientes();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   return {
     pacientes,
     loading,

@@ -44,12 +44,35 @@ class ClinicaService {
       formData.append('logo', data.logo);
     }
 
-    const response = await api.post<Clinica>(`${this.baseUrl}/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.post<Clinica>(`${this.baseUrl}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]> } };
+        const errorData = axiosError.response?.data;
+        
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field === 'nombre' ? 'Nombre' :
+                               field === 'ruc' ? 'RUC' :
+                               field === 'direccion' ? 'Dirección' :
+                               field === 'telefono' ? 'Teléfono' :
+                               field === 'email' ? 'Email' :
+                               field;
+              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || 'Error al crear clínica');
+        }
+      }
+      throw error;
+    }
   }
 
   /**
@@ -71,12 +94,35 @@ class ClinicaService {
       formData.append('logo', data.logo);
     }
 
-    const response = await api.patch<Clinica>(`${this.baseUrl}/${id}/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.patch<Clinica>(`${this.baseUrl}/${id}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]> } };
+        const errorData = axiosError.response?.data;
+        
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field === 'nombre' ? 'Nombre' :
+                               field === 'ruc' ? 'RUC' :
+                               field === 'direccion' ? 'Dirección' :
+                               field === 'telefono' ? 'Teléfono' :
+                               field === 'email' ? 'Email' :
+                               field;
+              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || 'Error al actualizar clínica');
+        }
+      }
+      throw error;
+    }
   }
 
   /**

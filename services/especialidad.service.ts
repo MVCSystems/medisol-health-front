@@ -29,16 +29,58 @@ class EspecialidadService {
    * Crear nueva especialidad
    */
   async create(data: CreateEspecialidadData): Promise<Especialidad> {
-    const response = await api.post<Especialidad>(`${this.baseUrl}/`, data);
-    return response.data;
+    try {
+      const response = await api.post<Especialidad>(`${this.baseUrl}/`, data);
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]> } };
+        const errorData = axiosError.response?.data;
+        
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field === 'nombre' ? 'Nombre' :
+                               field === 'descripcion' ? 'Descripción' :
+                               field === 'icono' ? 'Ícono' :
+                               field;
+              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || 'Error al crear especialidad');
+        }
+      }
+      throw error;
+    }
   }
 
   /**
    * Actualizar especialidad existente
    */
   async update(id: number, data: UpdateEspecialidadData): Promise<Especialidad> {
-    const response = await api.patch<Especialidad>(`${this.baseUrl}/${id}/`, data);
-    return response.data;
+    try {
+      const response = await api.patch<Especialidad>(`${this.baseUrl}/${id}/`, data);
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]> } };
+        const errorData = axiosError.response?.data;
+        
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field === 'nombre' ? 'Nombre' :
+                               field === 'descripcion' ? 'Descripción' :
+                               field === 'icono' ? 'Ícono' :
+                               field;
+              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || 'Error al actualizar especialidad');
+        }
+      }
+      throw error;
+    }
   }
 
   /**

@@ -138,11 +138,12 @@ export function DoctorForm({ onSuccess, onCancel }: DoctorFormProps) {
     }
 
     setLoading(true);
+    setErrors({});
     
     try {
       const dataToSend: DoctorCreateData = {
         ...formData,
-        foto: foto || undefined
+        ...(foto && { foto })
       };
 
       const result = await registrarDoctor(dataToSend);
@@ -151,6 +152,18 @@ export function DoctorForm({ onSuccess, onCancel }: DoctorFormProps) {
         onSuccess?.();
       }
     } catch (error) {
+      // Capturar errores de validación del backend
+      if (error instanceof Error) {
+        const backendErrors: Record<string, string> = {};
+        const errorLines = error.message.split('\n');
+        errorLines.forEach(line => {
+          const [field, ...messageParts] = line.split(':');
+          if (field && messageParts.length > 0) {
+            backendErrors[field.trim()] = messageParts.join(':').trim();
+          }
+        });
+        setErrors(backendErrors);
+      }
       console.error('Error en formulario:', error);
     } finally {
       setLoading(false);

@@ -67,12 +67,29 @@ class DoctorService {
       }
     });
 
-    const response = await api.post(`${this.baseUrl}/registrar/`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.post(`${this.baseUrl}/registrar/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]>; status?: number; headers?: unknown } };
+        const errorData = axiosError.response?.data;
+        
+        // Formatear errores de validación del backend
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+            .join('\n');
+          const enhancedError = new Error(errorMessages || 'Error al registrar doctor');
+          throw enhancedError;
+        }
+      }
+      throw error;
+    }
   }
 
   // Listar doctores

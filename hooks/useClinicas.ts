@@ -1,99 +1,88 @@
-import { useState, useEffect } from 'react';
-import { clinicaService } from '@/services/clinica.service';
-import type { Clinica, CreateClinicaData, UpdateClinicaData, ClinicaFilters, PaginatedResponse } from '@/types/clinicas';
-
+import { useState, useEffect } from "react";
+import { clinicaService } from "@/services/clinica.service";
+import type {
+  Clinica,
+  CreateClinicaData,
+  UpdateClinicaData,
+  PaginatedResponse,
+} from "@/types/clinicas";
 export const useClinicas = () => {
   const [clinicas, setClinicas] = useState<Clinica[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
-
-  const fetchClinicas = async (filters?: ClinicaFilters) => {
+  const handle = (e: unknown, fallback: string) =>
+    e instanceof Error ? e.message : fallback;
+  const fetchClinicas = async () => {
     setLoading(true);
     setError(null);
-    
     try {
-      const response: PaginatedResponse<Clinica> = await clinicaService.getAll();
-      setClinicas(response.results);
-      setTotalCount(response.count);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al cargar las clínicas');
-    } finally {
-      setLoading(false);
+      const r: PaginatedResponse<Clinica> = await clinicaService.getAll();
+      setClinicas(r.results);
+      setTotalCount(r.count);
+    } catch (e) {
+      setError(handle(e, "Error al cargar las clínicas"));
     }
+    setLoading(false);
   };
-
-  const createClinica = async (data: CreateClinicaData): Promise<Clinica | null> => {
+  const createClinica = async (data: CreateClinicaData) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const newClinica = await clinicaService.create(data);
-      setClinicas(prev => [...prev, newClinica]);
-      setTotalCount(prev => prev + 1);
-      return newClinica;
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al crear la clínica');
+      const n = await clinicaService.create(data);
+      setClinicas((p) => [...p, n]);
+      setTotalCount((c) => c + 1);
+      return n;
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Error al crear la clínica";
+      setError(errorMsg);
       return null;
     } finally {
       setLoading(false);
     }
   };
-
-  const updateClinica = async (id: number, data: UpdateClinicaData): Promise<Clinica | null> => {
+  const updateClinica = async (id: number, data: UpdateClinicaData) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const updatedClinica = await clinicaService.update(id, data);
-      setClinicas(prev => 
-        prev.map(clinica => clinica.id === id ? updatedClinica : clinica)
-      );
-      return updatedClinica;
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al actualizar la clínica');
+      const u = await clinicaService.update(id, data);
+      setClinicas((p) => p.map((c) => (c.id === id ? u : c)));
+      return u;
+    } catch (e) {
+      const errorMsg = e instanceof Error ? e.message : "Error al actualizar la clínica";
+      setError(errorMsg);
       return null;
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
-
-  const deleteClinica = async (id: number): Promise<boolean> => {
+  const deleteClinica = async (id: number) => {
     setLoading(true);
     setError(null);
-    
     try {
       await clinicaService.delete(id);
-      setClinicas(prev => prev.filter(clinica => clinica.id !== id));
-      setTotalCount(prev => prev - 1);
+      setClinicas((p) => p.filter((c) => c.id !== id));
+      setTotalCount((c) => c - 1);
       return true;
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al eliminar la clínica');
+    } catch (e) {
+      setError(handle(e, "Error al eliminar la clínica"));
       return false;
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
-
-  const getClinicaById = async (id: number): Promise<Clinica | null> => {
+  const getClinicaById = async (id: number) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const clinica = await clinicaService.getById(id);
-      return clinica;
-    } catch (err: any) {
-      setError(err.response?.data?.detail || 'Error al obtener la clínica');
+      return await clinicaService.getById(id);
+    } catch (e) {
+      setError(handle(e, "Error al obtener la clínica"));
       return null;
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
-
   useEffect(() => {
     fetchClinicas();
   }, []);
-
   return {
     clinicas,
     loading,

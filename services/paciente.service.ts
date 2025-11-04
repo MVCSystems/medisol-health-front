@@ -47,12 +47,40 @@ class PacienteService {
 
   // Crear paciente con usuario automático
   async registrar(data: PacienteCreateData): Promise<PacienteRegistroResponse> {
-    const response = await api.post(`${this.baseUrl}/registrar/`, data, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.post(`${this.baseUrl}/registrar/`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]> } };
+        const errorData = axiosError.response?.data;
+        
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field === 'dni' ? 'DNI' :
+                               field === 'email' ? 'Email' :
+                               field === 'password' ? 'Contraseña' :
+                               field === 'nombres' ? 'Nombres' :
+                               field === 'apellido_paterno' ? 'Apellido Paterno' :
+                               field === 'apellido_materno' ? 'Apellido Materno' :
+                               field === 'telefono' ? 'Teléfono' :
+                               field === 'celular' ? 'Celular' :
+                               field === 'fecha_nacimiento' ? 'Fecha de Nacimiento' :
+                               field === 'genero' ? 'Género' :
+                               field;
+              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || 'Error al registrar paciente');
+        }
+      }
+      throw error;
+    }
   }
 
   // Listar pacientes
@@ -70,12 +98,34 @@ class PacienteService {
 
   // Actualizar paciente
   async update(id: number, data: Partial<PacienteCreateData>): Promise<Paciente> {
-    const response = await api.put(`${this.baseUrl}/${id}/`, data, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
+    try {
+      const response = await api.put(`${this.baseUrl}/${id}/`, data, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return response.data;
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { data?: Record<string, string[]> } };
+        const errorData = axiosError.response?.data;
+        
+        if (errorData && typeof errorData === 'object') {
+          const errorMessages = Object.entries(errorData)
+            .map(([field, messages]) => {
+              const fieldName = field === 'dni' ? 'DNI' :
+                               field === 'email' ? 'Email' :
+                               field === 'telefono' ? 'Teléfono' :
+                               field === 'celular' ? 'Celular' :
+                               field;
+              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
+            })
+            .join('\n');
+          throw new Error(errorMessages || 'Error al actualizar paciente');
+        }
+      }
+      throw error;
+    }
   }
 
   // Eliminar paciente (soft delete)
