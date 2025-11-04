@@ -76,6 +76,33 @@ class HorarioService {
     const response = await api.get('/api/clinicas/disponibilidad/', { params });
     return response.data;
   }
+
+  // Obtener TODAS las disponibilidades del doctor (sin paginación)
+  async getAllDisponibilidadDoctor(doctorId: number): Promise<DisponibilidadCita[]> {
+    let allResults: DisponibilidadCita[] = [];
+    let page = 1;
+    let hasMore = true;
+    
+    while (hasMore) {
+      const response = await api.get('/api/clinicas/disponibilidad/', {
+        params: { doctor: doctorId, page }
+      });
+      const data = response.data as PaginatedResponse<DisponibilidadCita>;
+      
+      if (data.results && data.results.length > 0) {
+        allResults = [...allResults, ...data.results];
+        hasMore = data.next !== null;
+        page++;
+      } else {
+        hasMore = false;
+      }
+      
+      // Límite de seguridad
+      if (page > 20) break;
+    }
+    
+    return allResults;
+  }
 }
 
 export const horarioService = new HorarioService();

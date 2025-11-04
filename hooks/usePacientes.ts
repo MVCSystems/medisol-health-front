@@ -20,9 +20,7 @@ export function usePacientes() {
     setError(null);
     try {
       const d = await pacienteService.getAll(mostrarInactivos);
-      setPacientes(
-        mostrarInactivos ? d.results.filter((x) => !x.activo) : d.results
-      );
+      setPacientes(d.results); // El backend ya filtra según el parámetro
     } catch {
       setError("Error al cargar la lista de pacientes");
       toast.error("Error al cargar pacientes");

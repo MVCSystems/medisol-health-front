@@ -44,7 +44,7 @@ export default function DeleteConfirmDialog({
             {usuario.roles && usuario.roles.length > 0 && (
               <p className="text-sm">
                 <span className="font-medium">Roles actuales:</span>{' '}
-                {usuario.roles.map(r => r.rol_nombre).join(', ')}
+                {usuario.roles.join(', ')}
               </p>
             )}
             <div className="bg-amber-50 dark:bg-amber-950 p-3 rounded-md mt-3">

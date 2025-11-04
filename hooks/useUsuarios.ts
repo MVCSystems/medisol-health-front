@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import useSWR from 'swr';
 import { toast } from 'sonner';
 import { usuarioService } from '@/services/usuario.service';
+import { useAuthStore } from '@/store/authStore';
 import type { Usuario, CreateUsuarioData, UpdateUsuarioData, PaginatedResponse } from '@/types/usuario';
 
 interface ApiError {
@@ -24,15 +25,19 @@ export function useUsuarios() {
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Solo cargar si el usuario tiene permisos
+  const { user, isAdmin } = useAuthStore();
+  const canViewUsuarios = isAdmin();
 
-  // Obtener usuarios con SWR
+  // Obtener usuarios con SWR (solo si tiene permisos)
   const { 
     data: response, 
     error, 
     isLoading,
     mutate: mutateUsuarios 
   } = useSWR<PaginatedResponse<Usuario>>(
-    USUARIOS_KEY,
+    canViewUsuarios && user ? USUARIOS_KEY : null, // Solo hace fetch si tiene permisos
     () => usuarioService.getAll(),
     {
       revalidateOnFocus: false,

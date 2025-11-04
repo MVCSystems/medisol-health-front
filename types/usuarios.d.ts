@@ -9,13 +9,8 @@ export interface Usuario {
   is_staff: boolean;
   is_superuser: boolean;
   is_active: boolean;
-  roles: UsuarioRol[];
-}
-
-export interface UsuarioRol {
-  id: number;
-  rol: string;
-  clinica: string | null;
+  roles: string[]; // Array simple de nombres de grupos de Django
+  rol?: string; // Rol principal del usuario
 }
 
 export interface Grupo {

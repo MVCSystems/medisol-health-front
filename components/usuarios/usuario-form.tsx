@@ -69,7 +69,8 @@ export default function UsuarioForm({
           telefono: usuario.telefono || '',
           direccion: usuario.direccion || '',
           is_active: usuario.is_active,
-          rol: usuario.roles?.[0]?.rol_nombre || 'Paciente'
+          // 🔄 ACTUALIZADO: roles ahora es string[], tomar el rol principal o el primero
+          rol: usuario.rol || usuario.roles?.[0] || 'Paciente'
         });
       } else {
         setFormData({

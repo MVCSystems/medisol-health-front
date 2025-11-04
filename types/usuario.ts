@@ -8,15 +8,12 @@ export interface Usuario {
   telefono?: string;
   direccion?: string;
   is_active: boolean;
+  is_staff: boolean;
+  is_superuser: boolean;
   fecha_eliminacion?: string;
-  roles: UsuarioRol[];
+  roles: string[]; // Array simple de nombres de grupos de Django
+  rol?: string; // Rol principal del usuario (calculado por backend)
   date_joined: string;
-}
-
-export interface UsuarioRol {
-  id: number;
-  rol_nombre: string;
-  clinica_nombre?: string;
 }
 
 // Tipos para formularios

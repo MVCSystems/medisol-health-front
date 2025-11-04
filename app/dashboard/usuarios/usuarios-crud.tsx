@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/store/authStore";
 import { useUsuarios } from "@/hooks/useUsuarios";
 import UsuarioCard from "@/components/usuarios/usuario-card";
 import UsuarioFilters from "@/components/usuarios/usuario-filters";
@@ -13,7 +12,6 @@ import { Plus, Users } from "lucide-react";
 import type { Usuario, CreateUsuarioData, UpdateUsuarioData } from "@/types/usuario";
 
 export default function UsuariosPage() {
-  const { isAdmin } = useAuthStore();
   const searchParams = useSearchParams();
   
   // Estados para filtros
@@ -57,20 +55,6 @@ export default function UsuariosPage() {
       setRoleFilter(mappedRole);
     }
   }, [searchParams]);
-
-  // Control de acceso
-  if (!isAdmin()) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-destructive">Acceso Denegado</h2>
-          <p className="text-muted-foreground mt-2">
-            No tienes permisos para ver usuarios
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // Handlers para modales
   const handleCreateClick = () => {
@@ -138,8 +122,10 @@ export default function UsuariosPage() {
       usuario.dni?.includes(search) ||
       usuario.email?.toLowerCase().includes(search.toLowerCase());
 
+    // 🔄 ACTUALIZADO: roles ahora es un array de strings (Django Groups)
     const matchesRole = roleFilter === "ALL" || 
-      usuario.roles?.some((role: { rol_nombre: string }) => role.rol_nombre === roleFilter);
+      usuario.roles?.includes(roleFilter) || 
+      usuario.rol === roleFilter;
 
     const matchesStatus = statusFilter === "ALL" ||
       (statusFilter === "ACTIVE" && usuario.is_active) ||

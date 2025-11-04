@@ -51,7 +51,7 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
     ],
   });
 
-  // Opciones para ADMIN
+  // 🔒 Opciones para ADMIN SOLAMENTE
   if (isAdmin) {
     navMain.push(
       {
@@ -79,9 +79,9 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
         icon: Users,
         items: [
           { title: "Todos los Usuarios", url: "/dashboard/usuarios" },
-          { title: "Administradores", url: "/dashboard/usuarios?role=ADMIN" },
-          { title: "Personal Médico", url: "/dashboard/usuarios?role=DOCTOR" },
-          { title: "Pacientes del Sistema", url: "/dashboard/usuarios?role=PACIENTE" },
+          { title: "Administradores", url: "/dashboard/usuarios?role=Administrador" },
+          { title: "Personal Médico", url: "/dashboard/usuarios?role=Doctor" },
+          { title: "Pacientes del Sistema", url: "/dashboard/usuarios?role=Paciente" },
         ],
       },
       {
@@ -91,9 +91,23 @@ const getNavData = (isAdmin: boolean, isDoctor: boolean, isPaciente: boolean) =>
       }
     )
   }
+  
+  // 🔒 Opciones para DOCTOR SOLAMENTE
+  if (isDoctor && !isAdmin) {
+    navMain.push(
+      {
+        title: "Mis Pacientes",
+        url: "/dashboard/usuarios?role=Paciente",
+        icon: Users,
+        items: [
+          { title: "Ver Pacientes", url: "/dashboard/usuarios?role=Paciente" },
+        ],
+      }
+    )
+  }
 
-  // Opciones específicas para DOCTOR
-  if (isDoctor) {
+  // 🔒 Opciones adicionales para DOCTOR
+  if (isDoctor && !isAdmin) {
     navMain.push(
       {
         title: "Mi Agenda",
@@ -174,32 +188,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar
-      className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
+      className="top-[--header-height] h-[calc(100svh-var(--header-height))] bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800"
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="px-3 py-3 border-b border-zinc-100 dark:border-zinc-800">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="/dashboard">
-                <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Heart className="size-4" />
+              <a href="/dashboard" className="flex items-center gap-2.5 group hover:bg-transparent">
+                <div className="bg-primary text-primary-foreground flex aspect-square size-9 items-center justify-center rounded-lg shadow-sm">
+                  <Heart className="size-4.5" />
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">MediSol</span>
-                  <span className="truncate text-xs text-muted-foreground">Sistema Médico</span>
+                <div className="flex flex-col text-left leading-none">
+                  <span className="truncate font-semibold text-[15px] text-foreground">MediSol</span>
+                  <span className="truncate text-[11px] text-muted-foreground mt-0.5">Sistema Médico</span>
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="px-2 py-2">
         <NavMain items={navData.navMain} />
-        <NavProjects projects={navData.quickActions} />
+        <div className="mt-3">
+          <NavProjects projects={navData.quickActions} />
+        </div>
         <NavSecondary items={navData.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="px-2 py-2 border-t border-zinc-100 dark:border-zinc-800">
         <NavUser />
       </SidebarFooter>
     </Sidebar>

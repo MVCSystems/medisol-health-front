@@ -18,6 +18,17 @@ import {
 // ...existing code...
 import { chatbotWS } from "@/lib/websocket";
 import type { DniValidationResult } from "@/types/chatbot";
+import { 
+  validarDNI, 
+  validarNombre, 
+  validarCelular, 
+  validarEmail, 
+  // validarMotivo,
+  formatearDNI,
+  formatearCelular,
+  formatearNombre,
+  formatearEmail
+} from "@/lib/validations";
 
 interface Message {
   id: string;
@@ -50,9 +61,69 @@ export default function ChatbotPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [connected, setConnected] = useState(false);
   const [context, setContext] = useState<Record<string, unknown>>({});
+  const [inputError, setInputError] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
+
+  // 🎨 Función para obtener placeholder inteligente basado en el último mensaje
+  const getSmartPlaceholder = (): string => {
+    if (messages.length === 0) return "Escribe tu mensaje aquí...";
+    
+    const lastBotMessage = [...messages].reverse().find(m => m.sender === 'bot');
+    if (!lastBotMessage) return "Escribe tu mensaje aquí...";
+    
+    const content = lastBotMessage.content.toLowerCase();
+    
+    // Detectar qué está pidiendo el bot
+    if (content.includes('dni') && !context.dni_validado) {
+      return "Ingresa tu DNI (8 dígitos)...";
+    } else if (content.includes('nombre') && !content.includes('apellido')) {
+      return "Ingresa tus nombres...";
+    } else if (content.includes('apellido')) {
+      return "Ingresa tus apellidos...";
+    } else if (content.includes('celular') || content.includes('teléfono')) {
+      return "Ingresa tu celular (ej: 987654321)...";
+    } else if (content.includes('correo') || content.includes('email')) {
+      return "Ingresa tu email (ej: usuario@correo.com)...";
+    } else if (content.includes('motivo')) {
+      return "Describe el motivo de tu cita...";
+    } else if (content.includes('fecha')) {
+      return "Ingresa la fecha (DD/MM/YYYY)...";
+    } else if (content.includes('hora')) {
+      return "Ingresa la hora (HH:MM)...";
+    }
+    
+    return "Escribe tu mensaje aquí...";
+  };
+
+  // ✅ Función para validar en tiempo real mientras el usuario escribe
+  const getInputValidationStatus = (value: string): { valid: boolean; message: string } => {
+    if (!value.trim()) return { valid: false, message: "" };
+
+    // Detectar tipo de input basado en el contenido
+    if (/^\d+$/.test(value)) {
+      // Solo números - puede ser DNI o celular
+      if (value.length === 8) {
+        const result = validarDNI(value);
+        return { valid: result.valido, message: result.error || "✓ DNI válido" };
+      } else if (value.length >= 7 && value.length <= 15) {
+        const result = validarCelular(value);
+        return { valid: result.valido, message: result.error || "✓ Celular válido" };
+      }
+      return { valid: false, message: "" };
+    } else if (value.includes('@')) {
+      // Email
+      const result = validarEmail(value);
+      return { valid: result.valido, message: result.error || "✓ Email válido" };
+    } else if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(value) && value.length >= 2) {
+      // Nombre
+      const result = validarNombre(value);
+      return { valid: result.valido, message: result.error || "✓ Nombre válido" };
+    }
+    
+    return { valid: false, message: "" };
+  };
 
   const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
     if (messagesContainerRef.current) {
@@ -279,38 +350,86 @@ export default function ChatbotPage() {
   const handleSendMessage = () => {
     if (!inputValue.trim() || !connected) return;
 
+    const mensaje = inputValue.trim();
+    let mensajeProcesado = mensaje;
+    
+    // 🔒 VALIDACIÓN Y FORMATEO inteligente según el tipo de dato
+    // Detectar si estamos esperando un DNI
+    const esperaDNI = !context.dni_validado && !context.usuario_existente;
+    const esDNI = /^\d{8}$/.test(mensaje);
+    
+    // Validar DNI si detectamos que es uno
+    if (esDNI && esperaDNI) {
+      const validacion = validarDNI(mensaje);
+      if (!validacion.valido) {
+        setInputError(validacion.error || "DNI inválido");
+        setTimeout(() => setInputError(""), 3000);
+        return;
+      }
+      mensajeProcesado = formatearDNI(mensaje);
+    }
+    // Validar nombres si detectamos solo letras y espacios (al menos 2 palabras)
+    else if (/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]{2,}$/.test(mensaje) && mensaje.includes(' ')) {
+      const validacion = validarNombre(mensaje);
+      if (!validacion.valido) {
+        setInputError(validacion.error || "Nombre inválido");
+        setTimeout(() => setInputError(""), 3000);
+        return;
+      }
+      mensajeProcesado = formatearNombre(mensaje);
+    }
+    // Validar celular si detectamos solo números (7-15 dígitos)
+    else if (/^\d{7,15}$/.test(mensaje.replace(/\D/g, ''))) {
+      const soloNumeros = mensaje.replace(/\D/g, '');
+      if (soloNumeros.length >= 7) {
+        const validacion = validarCelular(soloNumeros);
+        if (!validacion.valido) {
+          setInputError(validacion.error || "Celular inválido");
+          setTimeout(() => setInputError(""), 3000);
+          return;
+        }
+        mensajeProcesado = formatearCelular(soloNumeros);
+      }
+    }
+    // Validar email si detectamos @ en el mensaje
+    else if (mensaje.includes('@')) {
+      const validacion = validarEmail(mensaje);
+      if (!validacion.valido) {
+        setInputError(validacion.error || "Email inválido");
+        setTimeout(() => setInputError(""), 3000);
+        return;
+      }
+      mensajeProcesado = formatearEmail(mensaje);
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: inputValue,
+      content: mensaje,
       sender: "user",
       timestamp: new Date(),
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const mensaje = inputValue;
     setInputValue("");
+    setInputError("");
     setIsTyping(true);
-
-    // Detectar si es un DNI (8 dígitos) y el contexto indica que debe validarlo
-    const esDNI = /^\d{8}$/.test(mensaje.trim());
-    const esperaDNI = !context.dni_validado && !context.usuario_existente;
 
     // Enviar mensaje al WebSocket
     if (esDNI && esperaDNI) {
       // Guardar DNI en el contexto antes de validar
-      const nuevoContexto = { ...context, dni: mensaje.trim() };
+      const nuevoContexto = { ...context, dni: mensajeProcesado };
       setContext(nuevoContexto);
       
       // Validar DNI
       chatbotWS.send({
         accion: "validar_dni",
-        dni: mensaje.trim(),
+        dni: mensajeProcesado,
         contexto: nuevoContexto,
       });
     } else {
       // Mensaje normal
       chatbotWS.send({
-        mensaje: mensaje,
+        mensaje: mensajeProcesado,
         contexto: context,
         accion: "mensaje",
       });
@@ -543,15 +662,39 @@ export default function ChatbotPage() {
           {/* Input Area */}
           <div className="p-5 bg-card dark:bg-background/80 backdrop-blur-md border-t border-border dark:border-gray-700 rounded-b-3xl transition-colors duration-300">
             <div className="flex gap-4 items-end">
-              <div className="flex-1">
+              <div className="flex-1 relative">
                 <Input
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setInputValue(value);
+                    setInputError(""); // Limpiar error al escribir
+                  }}
                   onKeyPress={handleKeyPress}
-                  placeholder="Escribe tu mensaje aquí..."
+                  placeholder={getSmartPlaceholder()}
                   disabled={!connected}
-                  className="border-2 border-border/50 dark:border-gray-700 focus:border-accent dark:focus:border-accent rounded-xl px-5 py-4 text-base resize-none transition-all duration-200 bg-background dark:bg-background text-foreground dark:text-foreground"
+                  className={`border-2 ${
+                    inputError 
+                      ? 'border-red-500 dark:border-red-400' 
+                      : inputValue.trim() && getInputValidationStatus(inputValue).valid
+                        ? 'border-green-500 dark:border-green-400'
+                        : 'border-border/50 dark:border-gray-700'
+                  } focus:border-accent dark:focus:border-accent rounded-xl px-5 py-4 text-base resize-none transition-all duration-200 bg-background dark:bg-background text-foreground dark:text-foreground`}
                 />
+                {inputError && (
+                  <p className="text-red-500 dark:text-red-400 text-sm mt-2 animate-slide-in-left">
+                    ⚠️ {inputError}
+                  </p>
+                )}
+                {!inputError && inputValue.trim() && getInputValidationStatus(inputValue).message && (
+                  <p className={`text-sm mt-2 animate-slide-in-left ${
+                    getInputValidationStatus(inputValue).valid 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-amber-600 dark:text-amber-400'
+                  }`}>
+                    {getInputValidationStatus(inputValue).message}
+                  </p>
+                )}
               </div>
               <Button
                 onClick={handleSendMessage}

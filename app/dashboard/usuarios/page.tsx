@@ -4,17 +4,22 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import RoleGuard from "@/components/auth/RoleGuard";
 import { useAuthStore } from "@/store/authStore";
+import { usePermissions } from "@/hooks/use-permissions";
 import { useUsuarios } from "@/hooks/useUsuarios";
+import { usePacientes } from "@/hooks/usePacientes";
 import UsuarioCard from "@/components/usuarios/usuario-card";
 import UsuarioFilters from "@/components/usuarios/usuario-filters";
 import UsuarioForm from "@/components/usuarios/usuario-form";
+import UsuarioProfileView from "@/components/usuarios/usuario-profile-view";
 import DeleteConfirmDialog from "@/components/usuarios/delete-confirm-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus, Users } from "lucide-react";
 import type { Usuario, CreateUsuarioData, UpdateUsuarioData } from "@/types/usuario";
+import type { Paciente } from "@/types/clinicas";
 
 export default function UsuariosPage() {
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, isDoctor } = useAuthStore();
+  const permissions = usePermissions();
   const searchParams = useSearchParams();
   
   // Estados para filtros
@@ -25,23 +30,38 @@ export default function UsuariosPage() {
   // Estados para modales
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
+  const [showProfileView, setShowProfileView] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
 
-  // Hook personalizado para gestión de usuarios
-  const {
-    usuarios,
-    totalCount,
-    isLoading,
-    isCreating,
-    isUpdating,
-    isDeleting,
-    createUsuario,
-    updateUsuario,
-    deleteUsuario,
-    toggleUsuarioStatus,
-    error
-  } = useUsuarios();
+  // Hook personalizado para gestión de usuarios (admin)
+  const usuariosData = useUsuarios();
+  
+  // Hook personalizado para gestión de pacientes (doctor)
+  const pacientesData = usePacientes();
+  
+  // Usar datos según el rol
+  const usuarios = isDoctor() ? pacientesData.pacientes.map((p: Paciente) => ({
+    id: p.id,
+    dni: p.numero_documento || p.usuario_data?.dni,
+    first_name: p.nombres || p.usuario_data?.first_name || '',
+    last_name: p.apellidos || p.usuario_data?.last_name || '',
+    email: p.usuario_data?.email || '',
+    is_active: p.activo,
+    roles: ['Paciente'],
+    rol: 'Paciente'
+  } as Usuario)) : usuariosData.usuarios;
+  
+  const totalCount = isDoctor() ? pacientesData.pacientes.length : usuariosData.totalCount;
+  const isLoading = isDoctor() ? pacientesData.loading : usuariosData.isLoading;
+  const isCreating = usuariosData.isCreating;
+  const isUpdating = usuariosData.isUpdating;
+  const isDeleting = usuariosData.isDeleting;
+  const createUsuario = usuariosData.createUsuario;
+  const updateUsuario = usuariosData.updateUsuario;
+  const deleteUsuario = usuariosData.deleteUsuario;
+  const toggleUsuarioStatus = usuariosData.toggleUsuarioStatus;
+  const error = isDoctor() ? pacientesData.error : usuariosData.error;
 
   // Aplicar filtro desde URL al cargar
   useEffect(() => {
@@ -59,24 +79,15 @@ export default function UsuariosPage() {
     }
   }, [searchParams]);
 
-  // Control de acceso
-  if (!isAdmin()) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-destructive">Acceso Denegado</h2>
-          <p className="text-muted-foreground mt-2">
-            No tienes permisos para ver usuarios
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   // Handlers para modales
   const handleCreateClick = () => {
     setSelectedUsuario(null);
     setShowCreateForm(true);
+  };
+
+  const handleViewClick = (usuario: Usuario) => {
+    setSelectedUsuario(usuario);
+    setShowProfileView(true);
   };
 
   const handleEditClick = (usuario: Usuario) => {
@@ -136,8 +147,10 @@ export default function UsuariosPage() {
       usuario.dni?.includes(search) ||
       usuario.email?.toLowerCase().includes(search.toLowerCase());
 
+    // 🔄 ACTUALIZADO: roles ahora es un array de strings (Django Groups)
     const matchesRole = roleFilter === "ALL" || 
-      usuario.roles?.some((role) => role.rol_nombre === roleFilter);
+      usuario.roles?.includes(roleFilter) || 
+      usuario.rol === roleFilter;
 
     const matchesStatus = statusFilter === "ALL" ||
       (statusFilter === "ACTIVE" && usuario.is_active) ||
@@ -147,24 +160,33 @@ export default function UsuariosPage() {
   });
 
   return (
-    <RoleGuard allowedRoles={['admin']}>
+    <RoleGuard allowedRoles={['admin', 'doctor', 'paciente']}>
       <div className="p-6 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="h-8 w-8 text-primary" />
             <div>
-              <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
+              <h1 className="text-3xl font-bold">
+                {isAdmin() ? 'Gestión de Usuarios' : 
+                 isDoctor() ? 'Mis Pacientes' : 
+                 'Mi Perfil'}
+              </h1>
               <p className="text-muted-foreground">
-                Administra usuarios del sistema médico ({totalCount} usuarios)
+                {isAdmin() ? `Administra usuarios del sistema médico (${totalCount} usuarios)` :
+                 isDoctor() ? `Gestiona la información de tus pacientes (${totalCount} pacientes)` :
+                 'Visualiza y actualiza tu información personal'}
               </p>
             </div>
           </div>
-        <Button onClick={handleCreateClick} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Nuevo Usuario
-        </Button>
-      </div>
+          {/* Solo admin puede crear usuarios */}
+          {permissions.canCreateUsers() && (
+            <Button onClick={handleCreateClick} className="gap-2">
+              <Plus className="h-4 w-4" />
+              Nuevo Usuario
+            </Button>
+          )}
+        </div>
 
       {/* Filtros */}
       <UsuarioFilters
@@ -225,15 +247,25 @@ export default function UsuariosPage() {
             <UsuarioCard
               key={usuario.id}
               usuario={usuario}
-              onEdit={handleEditClick}
-              onDelete={handleDeleteClick}
-              onToggleStatus={handleToggleStatus}
+              onView={handleViewClick} // Todos pueden ver el perfil
+              onEdit={permissions.canEditUsers() ? handleEditClick : undefined}
+              onDelete={permissions.canDeleteUsers() ? handleDeleteClick : undefined}
+              onToggleStatus={permissions.canEditUsers() ? handleToggleStatus : undefined}
             />
           ))}
         </div>
       )}
 
       {/* Modales */}
+      <UsuarioProfileView
+        open={showProfileView}
+        onClose={() => {
+          setShowProfileView(false);
+          setSelectedUsuario(null);
+        }}
+        usuario={selectedUsuario}
+      />
+
       <UsuarioForm
         open={showCreateForm}
         onClose={() => setShowCreateForm(false)}

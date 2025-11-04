@@ -106,10 +106,11 @@ export default function DashboardContent() {
                     if (usuariosRes.status === 'fulfilled') {
                         const rawUsuarios: unknown = (usuariosRes as PromiseFulfilledResult<unknown>).value;
                         const usuariosData = extractData(rawUsuarios);
-                        type UsuarioSimple = { roles?: Array<{ rol_nombre: string }> }
+                        // 🔄 ACTUALIZADO: roles ahora es string[] (Django Groups)
+                        type UsuarioSimple = { roles?: string[], rol?: string }
                         const usuarios = getArrayFromData(usuariosData) as UsuarioSimple[];
                         pacientesCount = usuarios.filter((usuario) =>
-                            usuario?.roles?.some(rol => rol.rol_nombre === 'Paciente')
+                            usuario?.roles?.includes('Paciente') || usuario?.rol === 'Paciente'
                         ).length;
                     }
 

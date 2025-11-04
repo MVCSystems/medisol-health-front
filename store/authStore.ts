@@ -1,12 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-interface UserRole {
-  id: number
-  rol: string
-  clinica: string | null
-}
-
 interface User {
   id: number
   dni: string
@@ -15,7 +9,8 @@ interface User {
   last_name: string
   telefono?: string
   direccion?: string
-  roles: UserRole[]
+  roles: string[] // Array simple de nombres de grupos de Django
+  rol?: string // Rol principal (retornado por backend)
   is_staff: boolean
   is_superuser: boolean
 }
@@ -96,33 +91,35 @@ export const useAuthStore = create<AuthState>()(
       // Getters
       getUserRole: () => {
         const { user } = get()
-        return user?.roles?.[0]?.rol || null
+        // Retornar el rol principal (viene del backend) o el primer grupo
+        return user?.rol || user?.roles?.[0] || null
       },
 
       getUserClinica: () => {
-        const { user } = get()
-        return user?.roles?.[0]?.clinica || null
+        // Ya no hay clínicas por rol en Django Groups
+        // Retornar null por ahora o implementar lógica específica si necesitas
+        return null
       },
 
       isAdmin: () => {
         const { user } = get()
-        // Solo el superusuario o el rol 'Administrador' es admin
-        return user?.is_superuser || user?.roles?.some(role => role.rol === 'Administrador') || false;
+        // Verificar si es superusuario o tiene el grupo 'Administrador'
+        return user?.is_superuser || user?.roles?.includes('Administrador') || false
       },
 
       isDoctor: () => {
         const { user } = get()
-        return user?.roles?.some(role => role.rol === 'Doctor') || false
+        return user?.roles?.includes('Doctor') || false
       },
 
         isPaciente: () => {
           const { user } = get();
-          return user?.roles?.some(role => role.rol=== 'Paciente') || false;
+          return user?.roles?.includes('Paciente') || false;
         },
 
       isRecepcionista: () => {
         const { user } = get()
-        return user?.roles?.some(role => role.rol === 'Recepcionista') || false
+        return user?.roles?.includes('Recepcionista') || false
       },
     }),
     {

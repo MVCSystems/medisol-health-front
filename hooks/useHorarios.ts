@@ -8,14 +8,16 @@ export const useHorarios = (doctorId?: number) => {
   const [error, setError] = useState<string | null>(null);
 
   const cargarHorarios = useCallback(async () => {
+    console.log('📥 Cargando horarios para doctor:', doctorId);
     try {
       setLoading(true);
       setError(null);
       const response = await horarioService.getHorarios(doctorId);
+      console.log('✅ Horarios recibidos:', response.results?.length || 0, 'horarios');
       setHorarios(response.results || []);
     } catch (err) {
       setError('Error al cargar horarios');
-      console.error('Error al cargar horarios:', err);
+      console.error('❌ Error al cargar horarios:', err);
     } finally {
       setLoading(false);
     }
@@ -23,13 +25,29 @@ export const useHorarios = (doctorId?: number) => {
 
   const crearHorario = async (data: Omit<HorarioDoctor, 'id' | 'doctor_nombre' | 'dia_semana_display'>) => {
     try {
+      console.log('📤 Enviando datos al backend:', data);
       await horarioService.createHorario(data);
       await cargarHorarios(); // Recargar lista
       return { success: true, error: null };
     } catch (err) {
-      const errorMsg = (err as any).response?.data?.detail || 'Error al crear horario';
+      console.error('❌ Error completo:', err);
+      const responseData = (err as any).response?.data;
+      console.error('❌ Response data:', responseData);
+      
+      // Intentar extraer el mensaje de error más específico
+      let errorMsg = 'Error al crear horario';
+      
+      if (responseData?.detail) {
+        errorMsg = responseData.detail;
+      } else if (responseData?.non_field_errors && Array.isArray(responseData.non_field_errors)) {
+        errorMsg = responseData.non_field_errors[0];
+        console.error('❌ non_field_errors:', responseData.non_field_errors);
+      } else if (typeof responseData === 'string') {
+        errorMsg = responseData;
+      }
+      
       setError(errorMsg);
-      console.error('Error al crear horario:', err);
+      console.error('❌ Mensaje final:', errorMsg);
       return { success: false, error: errorMsg };
     }
   };

@@ -83,11 +83,34 @@ class PacienteService {
     }
   }
 
-  // Listar pacientes
+  // Listar pacientes (carga todas las páginas automáticamente)
   async getAll(incluirInactivos: boolean = false): Promise<{ results: Paciente[]; count: number }> {
-    const params = incluirInactivos ? { incluir_inactivos: 'true' } : {};
-    const response = await api.get(`${this.baseUrl}/`, { params });
-    return response.data;
+    let allResults: Paciente[] = [];
+    let page = 1;
+    let totalCount = 0;
+    let hasMore = true;
+    
+    while (hasMore) {
+      const params = {
+        ...(incluirInactivos ? { incluir_inactivos: 'true' } : {}),
+        page
+      };
+      const response = await api.get(`${this.baseUrl}/`, { params });
+      const data = response.data;
+      
+      if (data.results && data.results.length > 0) {
+        allResults = [...allResults, ...data.results];
+        totalCount = data.count || allResults.length;
+        hasMore = data.next !== null;
+        page++;
+      } else {
+        hasMore = false;
+      }
+      
+      if (page > 20) break; // Límite de seguridad
+    }
+    
+    return { results: allResults, count: totalCount };
   }
 
   // Obtener paciente por ID
