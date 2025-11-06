@@ -18,9 +18,12 @@ class WebSocketService {
   private shouldReconnect = true;
 
   constructor(path: string) {
-    // Detectar si el frontend está en https para usar wss://
-    const wsProtocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss' : 'ws';
-    this.url = `${siteConfig.backend_url.replace(/^https?/, wsProtocol)}${path}`;
+    // Detectar si el backend usa https para usar wss://
+    const backendUrl = siteConfig.backend_url;
+    const isHttps = backendUrl.startsWith('https');
+    const wsProtocol = isHttps ? 'wss' : 'ws';
+    // Reemplazar http/https con ws/wss
+    this.url = `${backendUrl.replace(/^https?:/, `${wsProtocol}:`)}${path}`;
   }
 
   public connect(): Promise<void> {
