@@ -41,6 +41,9 @@ const nextConfig: NextConfig = {
             value: `
               default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: http: https:;
               connect-src 'self'
+                http://localhost:8000
+                ws://localhost:8000
+                wss://localhost:8000
                 https://apis.ntechs.net.pe
                 https://apis.ntechs.net.pe/medisol
                 https://apis.ntechs.net.pe/medisol/*

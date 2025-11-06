@@ -1,7 +1,15 @@
 import { api } from '@/lib/axios'
-import { LoginRequest, LoginResponse } from '@/types/usuarios'
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '@/types/usuarios'
 
 class AuthApiService {
+  /**
+   * Registrar un nuevo usuario
+   */
+  async register(data: RegisterRequest): Promise<RegisterResponse> {
+    const response = await api.post<RegisterResponse>('/api/usuarios/registro/', data)
+    return response.data
+  }
+
   /**
    * Realizar login con DNI y contraseña
    */
