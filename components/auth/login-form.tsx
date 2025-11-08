@@ -336,8 +336,14 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"form">)
       )}
       {/* Modal de Registro */}
       {showRegister && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-black/30 dark:bg-black/60">
-          <RegisterForm onClose={() => setShowRegister(false)} />
+        <div 
+          className="fixed inset-0 flex items-center justify-center p-4 z-50"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.75)' }}
+          onClick={() => setShowRegister(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <RegisterForm onClose={() => setShowRegister(false)} />
+          </div>
         </div>
       )}
     </>

@@ -44,8 +44,8 @@ export default function RegisterForm({ onClose }: { onClose: () => void }) {
       return
     }
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres')
       setIsLoading(false)
       return
     }
@@ -131,100 +131,236 @@ export default function RegisterForm({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="bg-card rounded-2xl shadow-2xl max-w-lg w-full p-6 border border-border relative">
-      <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700" aria-label="Cerrar registro"><X className="w-5 h-5" /></button>
-      <h2 className="text-2xl font-bold text-primary mb-6 text-center">Registro de Usuario</h2>
+  <div className="bg-background rounded-3xl max-w-xl w-full p-5 relative overflow-hidden border-none shadow-none" style={{border: 'none', boxShadow: 'none'}}>
+      {/* Header */}
+  <div className="flex items-center justify-between mb-3 pb-2.5">
+        <h2 className="text-xl font-bold text-foreground">Registro de Usuario</h2>
+        <button 
+          onClick={onClose} 
+          className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-full hover:bg-muted/50" 
+          aria-label="Cerrar"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
       
-      {/* Mensaje de éxito */}
+      {/* Mensajes */}
       {success && (
-        <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2 text-green-800 dark:text-green-200">
-          <CheckCircle2 className="w-5 h-5" />
-          <span>¡Registro exitoso! Redirigiendo...</span>
+        <div className="mb-3 p-2.5 bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800/50 rounded-lg flex items-center gap-2 text-green-700 dark:text-green-300">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          <span className="text-xs font-medium">¡Registro exitoso! Redirigiendo...</span>
         </div>
       )}
 
-      {/* Mensaje de error */}
       {error && (
-        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2 text-red-800 dark:text-red-200">
-          <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
-          <span className="whitespace-pre-line text-sm">{error}</span>
+        <div className="mb-3 p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 rounded-lg flex items-start gap-2 text-red-700 dark:text-red-300">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span className="text-xs whitespace-pre-line">{error}</span>
         </div>
       )}
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="tipoDoc">Tipo Doc</Label>
-            <select id="tipoDoc" name="tipoDoc" className="w-full h-10 rounded-lg border-border bg-background text-foreground focus:border-primary">
+      <form className="space-y-3" onSubmit={handleSubmit}>
+        {/* Documento */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="space-y-1">
+            <Label htmlFor="tipoDoc" className="text-xs">Tipo</Label>
+            <select 
+              id="tipoDoc" 
+              name="tipoDoc" 
+              className="w-full h-8 rounded-md border border-input bg-background text-xs outline-none"
+            >
               <option value="dni">DNI</option>
-              <option value="ce">Carnet de Extranjería</option>
+              <option value="ce">C.E.</option>
               <option value="pasaporte">Pasaporte</option>
             </select>
           </div>
-          <div>
-            <Label htmlFor="dni">N° Documento</Label>
-            <Input id="dni" name="dni" type="text" maxLength={12} required placeholder="Ingrese su número" />
-          </div>
-          <div>
-            <Label htmlFor="nombres">Nombres</Label>
-            <Input id="nombres" name="nombres" type="text" required placeholder="Nombres" />
-          </div>
-          <div>
-            <Label htmlFor="apellidoPaterno">Apellido Paterno</Label>
-            <Input id="apellidoPaterno" name="apellidoPaterno" type="text" required placeholder="Apellido paterno" />
-          </div>
-          <div>
-            <Label htmlFor="apellidoMaterno">Apellido Materno</Label>
-            <Input id="apellidoMaterno" name="apellidoMaterno" type="text" required placeholder="Apellido materno" />
-          </div>
-          <div>
-            <Label htmlFor="celular">Celular</Label>
-            <Input id="celular" name="celular" type="tel" required placeholder="999999999" />
-          </div>
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" required placeholder="usuario@email.com" />
-          </div>
-          <div>
-            <Label htmlFor="departamento">Departamento</Label>
-            <Input id="departamento" name="departamento" type="text" required placeholder="Departamento" />
-          </div>
-          <div>
-            <Label htmlFor="provincia">Provincia</Label>
-            <Input id="provincia" name="provincia" type="text" required placeholder="Provincia" />
-          </div>
-          <div>
-            <Label htmlFor="distrito">Distrito</Label>
-            <Input id="distrito" name="distrito" type="text" required placeholder="Distrito" />
-          </div>
-          <div className="sm:col-span-2">
-            <Label htmlFor="direccion">Dirección</Label>
-            <Input id="direccion" name="direccion" type="text" required placeholder="Dirección completa" />
+          <div className="col-span-2 space-y-1">
+            <Label htmlFor="dni" className="text-xs">N° Documento *</Label>
+            <Input 
+              id="dni" 
+              name="dni" 
+              type="text" 
+              maxLength={12} 
+              required 
+              placeholder="12345678" 
+              className="h-8 text-xs"
+            />
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="relative">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input id="password" name="password" type={showPassword ? 'text' : 'password'} required placeholder="Contraseña" className="pr-10" />
-            <button type="button" className="absolute right-2 top-8 text-gray-500 dark:text-gray-400" onClick={() => setShowPassword(!showPassword)}>
+
+        {/* Nombres y Apellidos */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="space-y-1">
+            <Label htmlFor="nombres" className="text-xs">Nombres *</Label>
+            <Input 
+              id="nombres" 
+              name="nombres" 
+              type="text" 
+              required 
+              placeholder="Juan" 
+              className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="apellidoPaterno" className="text-xs">Ap. Paterno *</Label>
+            <Input 
+              id="apellidoPaterno" 
+              name="apellidoPaterno" 
+              type="text" 
+              required 
+              placeholder="Pérez" 
+              className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="apellidoMaterno" className="text-xs">Ap. Materno *</Label>
+            <Input 
+              id="apellidoMaterno" 
+              name="apellidoMaterno" 
+              type="text" 
+              required 
+              placeholder="García" 
+              className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="celular" className="text-xs">Celular *</Label>
+            <Input 
+              id="celular" 
+              name="celular" 
+              type="tel" 
+              required 
+              placeholder="999888777" 
+              className="h-8 text-xs"
+            />
+          </div>
+        </div>
+
+        {/* Email */}
+        <div className="space-y-1">
+          <Label htmlFor="email" className="text-xs">Correo *</Label>
+          <Input 
+            id="email" 
+            name="email" 
+            type="email" 
+            required 
+            placeholder="usuario@email.com" 
+            className="h-8 text-xs"
+          />
+        </div>
+
+        {/* Ubicación */}
+        <div className="grid grid-cols-3 gap-2.5">
+          <div className="space-y-1">
+            <Label htmlFor="departamento" className="text-xs">Depto. *</Label>
+            <Input 
+              id="departamento" 
+              name="departamento" 
+              type="text" 
+              required 
+              placeholder="Lima" 
+              className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="provincia" className="text-xs">Provincia *</Label>
+            <Input 
+              id="provincia" 
+              name="provincia" 
+              type="text" 
+              required 
+              placeholder="Lima" 
+              className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="distrito" className="text-xs">Distrito *</Label>
+            <Input 
+              id="distrito" 
+              name="distrito" 
+              type="text" 
+              required 
+              placeholder="Miraflores" 
+              className="h-8 text-xs"
+            />
+          </div>
+        </div>
+
+        {/* Dirección */}
+        <div className="space-y-1">
+          <Label htmlFor="direccion" className="text-xs">Dirección *</Label>
+          <Input 
+            id="direccion" 
+            name="direccion" 
+            type="text" 
+            required 
+            placeholder="Av. Principal 123" 
+            className="h-8 text-xs"
+          />
+        </div>
+
+        {/* Contraseñas */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="relative space-y-1">
+            <Label htmlFor="password" className="text-xs">Contraseña *</Label>
+            <Input 
+              id="password" 
+              name="password" 
+              type={showPassword ? 'text' : 'password'} 
+              required 
+              placeholder="Mín. 8 caracteres" 
+              className="h-8 text-xs pr-8" 
+            />
+            <button 
+              type="button" 
+              className="absolute right-2 top-[22px] text-muted-foreground hover:text-foreground transition-colors text-xs" 
+              onClick={() => setShowPassword(!showPassword)}
+            >
               {showPassword ? '🙈' : '👁️'}
             </button>
           </div>
-          <div className="relative">
-            <Label htmlFor="repeatPassword">Repetir Contraseña</Label>
-            <Input id="repeatPassword" name="repeatPassword" type={showRepeatPassword ? 'text' : 'password'} required placeholder="Repetir contraseña" className="pr-10" />
-            <button type="button" className="absolute right-2 top-8 text-gray-500 dark:text-gray-400" onClick={() => setShowRepeatPassword(!showRepeatPassword)}>
+          <div className="relative space-y-1">
+            <Label htmlFor="repeatPassword" className="text-xs">Confirmar *</Label>
+            <Input 
+              id="repeatPassword" 
+              name="repeatPassword" 
+              type={showRepeatPassword ? 'text' : 'password'} 
+              required 
+              placeholder="Repita" 
+              className="h-8 text-xs pr-8" 
+            />
+            <button 
+              type="button" 
+              className="absolute right-2 top-[22px] text-muted-foreground hover:text-foreground transition-colors text-xs" 
+              onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+            >
               {showRepeatPassword ? '🙈' : '👁️'}
             </button>
           </div>
         </div>
-        <Button 
-          type="submit" 
-          disabled={isLoading || success}
-          className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-base rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? 'Registrando...' : success ? 'Registro exitoso' : 'Registrar'}
-        </Button>
+
+        {/* Botón */}
+        <div className="pt-2.5">
+          <Button 
+            type="submit" 
+            disabled={isLoading || success}
+            className="w-full h-9 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                Registrando...
+              </span>
+            ) : success ? (
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                Éxito
+              </span>
+            ) : (
+              'Crear Cuenta'
+            )}
+          </Button>
+        </div>
       </form>
     </div>
   )
